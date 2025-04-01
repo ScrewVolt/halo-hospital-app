@@ -1,8 +1,7 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom"
 import Login from "./pages/login"
 import Patients from "./pages/patients"
 import ProtectedRoute from "./components/protectedRoute"
-import Layout from "./components/Layout"
 import { AuthProvider } from "./authContext"
 
 function App() {
@@ -10,22 +9,18 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* 🔐 Public Route */}
+          {/* Public Route */}
           <Route path="/" element={<Login />} />
 
-          {/* 🔒 Protected Routes */}
+          {/* Protected Route */}
           <Route
-            path="/"
+            path="/patients"
             element={
               <ProtectedRoute>
-                <Layout />
+                <Patients />
               </ProtectedRoute>
             }
-          >
-            {/* ✅ Default route inside Layout is /patients */}
-            <Route index element={<Navigate to="/patients" />} />
-            <Route path="patients" element={<Patients />} />
-          </Route>
+          />
         </Routes>
       </Router>
     </AuthProvider>
