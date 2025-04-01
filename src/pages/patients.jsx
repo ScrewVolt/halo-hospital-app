@@ -147,7 +147,7 @@ export default function Patients() {
           handleSend(speakerTagged)
         }
         setLiveTranscript("")
-      }, 1500)
+      }, 500)
     }
 
     recognition.onerror = (event) => {
