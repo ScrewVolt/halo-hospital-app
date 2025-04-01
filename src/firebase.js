@@ -4,13 +4,14 @@ import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore" // ADD THIS
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAgGlETF032aGWY3Eq8uIBJNI0hk9E-bmY",
-  authDomain: "halo-6c5dc.firebaseapp.com",
-  projectId: "halo-6c5dc",
-  storageBucket: "halo-6c5dc.firebasestorage.app",
-  messagingSenderId: "787621550369",
-  appId: "1:787621550369:web:051f673ec89e8f7bc38660"
-};
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: import.meta.env.VITE_FIREBASE_APP_ID
+  }
+  
 
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
