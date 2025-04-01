@@ -1,4 +1,4 @@
-// ✅ Layout.jsx
+// ✅ Layout.jsx with polished sidebar (navy theme + better spacing)
 import { useEffect, useState } from "react"
 import { Outlet, useNavigate } from "react-router-dom"
 import { auth, db } from "../firebase"
@@ -67,45 +67,45 @@ export default function Layout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100 font-sans">
       {/* Sidebar */}
-      <aside className="w-64 bg-blue-700 text-white p-6 flex flex-col justify-between">
+      <aside className="w-72 bg-blue-900 text-white p-6 flex flex-col justify-between shadow-lg">
         <div>
-          <h1 className="text-2xl font-bold mb-6">HALO</h1>
+          <h1 className="text-3xl font-bold mb-6 text-center tracking-wide">HALO</h1>
 
-          <div className="mb-4">
+          <div className="mb-6">
             <input
               value={newPatient}
               onChange={(e) => setNewPatient(e.target.value)}
               placeholder="Add Patient"
-              className="w-full p-2 rounded text-black"
+              className="w-full p-2 rounded text-black border border-gray-300 focus:outline-none"
             />
             <button
               onClick={handleAddPatient}
-              className="mt-2 w-full bg-blue-500 hover:bg-blue-600 py-2 rounded"
+              className="mt-3 w-full bg-blue-600 hover:bg-blue-700 py-2 rounded shadow"
             >
-              Add
+              + Add Patient
             </button>
           </div>
 
-          <div className="space-y-2 overflow-y-auto max-h-[60vh]">
+          <div className="space-y-2 overflow-y-auto max-h-[60vh] pr-1">
             {patients.map((patient) => (
               <div
                 key={patient.id}
                 onClick={() => setSelectedPatient(patient)}
-                className={`flex justify-between items-center px-3 py-2 rounded cursor-pointer ${
+                className={`flex justify-between items-center px-3 py-2 rounded cursor-pointer transition-all duration-200 ${
                   selectedPatient?.id === patient.id
-                    ? "bg-blue-900"
-                    : "hover:bg-blue-600"
+                    ? "bg-blue-700"
+                    : "hover:bg-blue-800"
                 }`}
               >
-                <span>{patient.name}</span>
+                <span className="truncate text-sm font-medium">{patient.name}</span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     handleDeletePatient(patient.id)
                   }}
-                  className="bg-red-500 hover:bg-red-600 px-2 rounded"
+                  className="bg-red-500 hover:bg-red-600 px-2 py-1 text-xs rounded"
                 >
                   X
                 </button>
@@ -116,7 +116,7 @@ export default function Layout() {
 
         <button
           onClick={handleLogout}
-          className="bg-red-500 hover:bg-red-600 text-white py-2 rounded"
+          className="mt-6 bg-red-600 hover:bg-red-700 text-white py-2 rounded text-center shadow"
         >
           Logout
         </button>
