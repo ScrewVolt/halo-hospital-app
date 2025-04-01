@@ -1,3 +1,4 @@
+// ✅ Layout.jsx
 import { useEffect, useState } from "react"
 import { Outlet, useNavigate } from "react-router-dom"
 import { auth, db } from "../firebase"
@@ -20,7 +21,6 @@ export default function Layout() {
   const navigate = useNavigate()
   const user = auth.currentUser
 
-  // 🔄 Fetch patients from Firestore
   useEffect(() => {
     if (!user) return
 
@@ -33,17 +33,13 @@ export default function Layout() {
         ...doc.data(),
       }))
       setPatients(data)
+      if (!selectedPatient && data.length > 0) {
+        setSelectedPatient(data[0])
+      }
     })
 
     return () => unsub()
   }, [user])
-
-  // ✅ Automatically select the first patient when list changes
-  useEffect(() => {
-    if (!selectedPatient && patients.length > 0) {
-      setSelectedPatient(patients[0])
-    }
-  }, [patients])
 
   const handleAddPatient = async () => {
     const name = newPatient.trim()
@@ -61,7 +57,7 @@ export default function Layout() {
   const handleDeletePatient = async (id) => {
     await deleteDoc(doc(db, "users", user.uid, "patients", id))
     if (selectedPatient?.id === id) {
-      setSelectedPatient(null)
+      setSelectedPatient(patients[0] || null)
     }
   }
 
