@@ -112,55 +112,58 @@ export default function Patients() {
   }
 
   const startRecognition = () => {
-    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
-      alert("Speech recognition not supported.")
-      return
-    }
-
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+    if (!SpeechRecognition) return alert("Speech recognition not supported.")
+  
     const recognition = new SpeechRecognition()
-
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = "en-US"
-
+  
     recognitionRef.current = recognition
     setRecognizing(true)
-
+  
+    let tempFinal = "" // Accumulate final sentences
+  
     recognition.onresult = (event) => {
-      let finalTranscript = ""
-
+      let interimTranscript = ""
+  
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
         if (event.results[i].isFinal) {
-          finalTranscript += transcript + " "
+          tempFinal += transcript + " "
         } else {
-          setLiveTranscript(transcript)
+          interimTranscript = transcript
         }
       }
-
+  
+      setLiveTranscript(interimTranscript)
+  
       if (silenceTimer.current) clearTimeout(silenceTimer.current)
-
+  
+      // Use 1500ms as more natural pause window
       silenceTimer.current = setTimeout(() => {
-        if (finalTranscript.trim()) {
-          const speakerTagged = tagSpeaker(finalTranscript.trim())
+        if (tempFinal.trim()) {
+          const speakerTagged = tagSpeaker(tempFinal.trim())
           handleSend(speakerTagged)
         }
+        tempFinal = ""
         setLiveTranscript("")
-      }, 500)
+      }, 1500)
     }
-
+  
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error)
+      setRecognizing(false)
     }
-
+  
     recognition.onend = () => {
       setRecognizing(false)
       setLiveTranscript("")
     }
-
+  
     recognition.start()
-  }
+  }  
 
   const stopRecognition = () => {
     if (recognitionRef.current) {
