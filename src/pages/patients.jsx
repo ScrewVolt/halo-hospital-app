@@ -36,7 +36,6 @@ export default function Patients() {
   const exportRef = useRef(null)
   const recognitionRef = useRef(null)
   const shouldRestartRef = useRef(false)
-  const scrollRef = useRef(null)
 
   useEffect(() => {
     if (!selectedPatient || !user) return
@@ -70,10 +69,6 @@ export default function Patients() {
     if (selectedPatient?.nursingChart) setNursingChart(selectedPatient.nursingChart)
     else setNursingChart("")
   }, [selectedPatient])
-
-  useEffect(() => {
-    scrollRef.current?.scrollIntoView({ behavior: "smooth" })
-  }, [messages, liveTranscript])
 
   const handleSend = async (text) => {
     const content = text || chatInput
@@ -332,7 +327,7 @@ ${chatText}
                 )}
               </div>
             )}
-            <div ref={scrollRef} />
+            <div/>
           </div>
 
           <input
