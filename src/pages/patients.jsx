@@ -1,4 +1,3 @@
-// patients.jsx
 import { useEffect, useState, useRef } from "react"
 import { useOutletContext } from "react-router-dom"
 import {
@@ -36,6 +35,7 @@ export default function Patients() {
   const user = auth.currentUser
   const exportRef = useRef(null)
   const recognitionRef = useRef(null)
+  const shouldRestartRef = useRef(false)
   const silenceTimer = useRef(null)
   const scrollRef = useRef(null)
 
@@ -112,13 +112,6 @@ export default function Patients() {
     return `Unspecified: ${text}`
   }
 
-  const restartRecognition = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop()
-      recognitionRef.current.start()
-    }
-  }
-
   const startRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return alert("Speech recognition not supported.")
@@ -129,6 +122,7 @@ export default function Patients() {
     recognition.lang = "en-US"
 
     recognitionRef.current = recognition
+    shouldRestartRef.current = true
     setRecognizing(true)
 
     let tempFinal = ""
@@ -161,13 +155,12 @@ export default function Patients() {
 
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error)
-      restartRecognition()
     }
 
     recognition.onend = () => {
-      if (recognizing) {
-        console.log("🎤 Restarting recognition (Android auto-stop workaround)")
-        restartRecognition()
+      if (shouldRestartRef.current) {
+        console.log("🎤 Restarting recognition...")
+        startRecognition()
       }
     }
 
@@ -175,6 +168,7 @@ export default function Patients() {
   }
 
   const stopRecognition = () => {
+    shouldRestartRef.current = false
     if (recognitionRef.current) {
       recognitionRef.current.stop()
       recognitionRef.current = null
