@@ -112,16 +112,6 @@ export default function Patients() {
     return `Unspecified: ${text}`
   }
 
-  const restartRecognition = () => {
-    if (!recognitionRef.current) return
-    try {
-      recognitionRef.current.start()
-      console.log("🎤 Recognition restarted")
-    } catch (err) {
-      console.warn("Restart failed:", err.message)
-    }
-  }
-
   const startRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return alert("Speech recognition not supported.")
@@ -132,55 +122,48 @@ export default function Patients() {
     recognition.lang = "en-US"
 
     recognitionRef.current = recognition
-    shouldRestartRef.current = true
     setRecognizing(true)
 
-    let fullTranscript = ""
-    let lastSentHash = ""
-    const hash = (str) => str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
+    let transcriptBuffer = ""
+    let lastTranscript = ""
 
     recognition.onresult = (event) => {
-      let interimTranscript = ""
-
+      let interim = ""
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
         if (event.results[i].isFinal) {
-          fullTranscript += " " + transcript
+          if (!transcript.endsWith(".")) transcriptBuffer += transcript + ". "
+          else transcriptBuffer += transcript + " "
         } else {
-          interimTranscript = transcript
+          interim = transcript
         }
       }
-
-      setLiveTranscript(interimTranscript)
+      setLiveTranscript(interim)
 
       if (silenceTimer.current) clearTimeout(silenceTimer.current)
-
       silenceTimer.current = setTimeout(() => {
-        const cleaned = fullTranscript.trim().replace(/\s+/g, " ")
-        const currentHash = hash(cleaned)
-
-        if (cleaned && currentHash !== lastSentHash) {
-          const speakerTagged = tagSpeaker(cleaned)
-          handleSend(speakerTagged)
-          lastSentHash = currentHash
+        const cleaned = transcriptBuffer.trim().replace(/\s+/g, " ")
+        if (cleaned && cleaned !== lastTranscript) {
+          handleSend(tagSpeaker(cleaned))
+          lastTranscript = cleaned
         }
-
-        fullTranscript = ""
+        transcriptBuffer = ""
         setLiveTranscript("")
-      }, 1500)
+      }, 1200)
     }
 
     recognition.onerror = (event) => {
       console.warn("Speech recognition error:", event.error)
-      if (shouldRestartRef.current && event.error !== "aborted") {
-        setTimeout(() => restartRecognition(), 300)
+      if (event.error !== "aborted") {
+        recognition.stop()
+        recognition.start()
       }
     }
 
     recognition.onend = () => {
-      if (shouldRestartRef.current) {
-        console.log("🎤 Recognition ended, restarting...")
-        setTimeout(() => restartRecognition(), 300)
+      if (recognizing) {
+        console.log("🎤 Restarting recognition")
+        recognition.start()
       }
     }
 
@@ -188,7 +171,6 @@ export default function Patients() {
   }
 
   const stopRecognition = () => {
-    shouldRestartRef.current = false
     if (recognitionRef.current) {
       recognitionRef.current.stop()
       recognitionRef.current = null
