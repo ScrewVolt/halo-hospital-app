@@ -115,57 +115,64 @@ export default function Patients() {
   const startRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return alert("Speech recognition not supported.")
-
+  
     const recognition = new SpeechRecognition()
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = "en-US"
-
+  
     recognitionRef.current = recognition
-    shouldRestartRef.current = true
     setRecognizing(true)
-
-    let tempFinal = ""
-
+  
+    let lastFinal = ""
+    let finalTranscript = ""
+  
     recognition.onresult = (event) => {
       let interimTranscript = ""
-
+  
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
+  
         if (event.results[i].isFinal) {
-          tempFinal += transcript + " "
+          // Avoid duplicate entries
+          if (transcript !== lastFinal) {
+            finalTranscript += transcript + " "
+            lastFinal = transcript
+          }
         } else {
           interimTranscript = transcript
         }
       }
-
+  
       setLiveTranscript(interimTranscript)
-
+  
       if (silenceTimer.current) clearTimeout(silenceTimer.current)
-
+  
       silenceTimer.current = setTimeout(() => {
-        if (tempFinal.trim()) {
-          const speakerTagged = tagSpeaker(tempFinal.trim())
-          handleSend(speakerTagged)
+        if (finalTranscript.trim()) {
+          const tagged = tagSpeaker(finalTranscript.trim())
+          handleSend(tagged)
         }
-        tempFinal = ""
+        finalTranscript = ""
         setLiveTranscript("")
       }, 1500)
     }
-
+  
     recognition.onerror = (event) => {
-      console.error("Speech recognition error:", event.error)
+      console.warn("Speech recognition error:", event.error)
+      if (event.error !== "aborted") restartRecognition()
     }
-
+  
     recognition.onend = () => {
-      if (shouldRestartRef.current) {
-        console.log("🎤 Restarting recognition...")
-        startRecognition()
+      if (recognizing) {
+        console.log("🎤 Recognition ended, restarting...")
+        restartRecognition()
       }
     }
-
+  
     recognition.start()
   }
+  
 
   const stopRecognition = () => {
     shouldRestartRef.current = false
