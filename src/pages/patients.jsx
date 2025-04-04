@@ -36,7 +36,6 @@ export default function Patients() {
   const exportRef = useRef(null)
   const recognitionRef = useRef(null)
   const shouldRestartRef = useRef(false)
-  const silenceTimer = useRef(null)
   const scrollRef = useRef(null)
 
   useEffect(() => {
@@ -117,53 +116,47 @@ export default function Patients() {
     if (!SpeechRecognition) return alert("Speech recognition not supported.")
 
     const recognition = new SpeechRecognition()
-    recognition.continuous = true
+    recognition.continuous = false
     recognition.interimResults = true
     recognition.lang = "en-US"
 
     recognitionRef.current = recognition
+    shouldRestartRef.current = true
     setRecognizing(true)
 
-    let transcriptBuffer = ""
-    let lastTranscript = ""
+    let sessionTranscript = ""
 
     recognition.onresult = (event) => {
       let interim = ""
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
         if (event.results[i].isFinal) {
-          if (!transcript.endsWith(".")) transcriptBuffer += transcript + ". "
-          else transcriptBuffer += transcript + " "
+          sessionTranscript += " " + transcript
         } else {
           interim = transcript
         }
       }
-      setLiveTranscript(interim)
 
-      if (silenceTimer.current) clearTimeout(silenceTimer.current)
-      silenceTimer.current = setTimeout(() => {
-        const cleaned = transcriptBuffer.trim().replace(/\s+/g, " ")
-        if (cleaned && cleaned !== lastTranscript) {
-          handleSend(tagSpeaker(cleaned))
-          lastTranscript = cleaned
-        }
-        transcriptBuffer = ""
-        setLiveTranscript("")
-      }, 1200)
+      setLiveTranscript(interim)
     }
 
     recognition.onerror = (event) => {
-      console.warn("Speech recognition error:", event.error)
-      if (event.error !== "aborted") {
-        recognition.stop()
-        recognition.start()
-      }
+      console.error("Speech recognition error:", event.error)
     }
 
     recognition.onend = () => {
-      if (recognizing) {
-        console.log("🎤 Restarting recognition")
-        recognition.start()
+      if (sessionTranscript.trim()) {
+        const tagged = tagSpeaker(sessionTranscript.trim())
+        handleSend(tagged)
+      }
+
+      setLiveTranscript("")
+      sessionTranscript = ""
+
+      if (shouldRestartRef.current) {
+        console.log("🎤 Restarting recognition (Android)")
+        startRecognition()
       }
     }
 
@@ -171,12 +164,13 @@ export default function Patients() {
   }
 
   const stopRecognition = () => {
+    shouldRestartRef.current = false
     if (recognitionRef.current) {
       recognitionRef.current.stop()
       recognitionRef.current = null
-      setRecognizing(false)
-      setLiveTranscript("")
     }
+    setRecognizing(false)
+    setLiveTranscript("")
   }
 
   const handleEditStart = (msg) => {
