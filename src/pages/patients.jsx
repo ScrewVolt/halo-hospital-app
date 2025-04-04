@@ -124,21 +124,19 @@ export default function Patients() {
     recognitionRef.current = recognition
     setRecognizing(true)
   
-    let lastFinal = ""
-    let finalTranscript = ""
+    let fullTranscript = ""
+    let lastSentHash = ""
+  
+    const hash = (str) =>
+      str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
   
     recognition.onresult = (event) => {
       let interimTranscript = ""
   
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
-  
         if (event.results[i].isFinal) {
-          // Avoid duplicate entries
-          if (transcript !== lastFinal) {
-            finalTranscript += transcript + " "
-            lastFinal = transcript
-          }
+          fullTranscript += " " + transcript
         } else {
           interimTranscript = transcript
         }
@@ -149,11 +147,16 @@ export default function Patients() {
       if (silenceTimer.current) clearTimeout(silenceTimer.current)
   
       silenceTimer.current = setTimeout(() => {
-        if (finalTranscript.trim()) {
-          const tagged = tagSpeaker(finalTranscript.trim())
-          handleSend(tagged)
+        const cleaned = fullTranscript.trim().replace(/\s+/g, " ")
+        const currentHash = hash(cleaned)
+  
+        if (cleaned && currentHash !== lastSentHash) {
+          const speakerTagged = tagSpeaker(cleaned)
+          handleSend(speakerTagged)
+          lastSentHash = currentHash
         }
-        finalTranscript = ""
+  
+        fullTranscript = ""
         setLiveTranscript("")
       }, 1500)
     }
@@ -165,7 +168,7 @@ export default function Patients() {
   
     recognition.onend = () => {
       if (recognizing) {
-        console.log("🎤 Recognition ended, restarting...")
+        console.log("🎤 Restarting recognition")
         restartRecognition()
       }
     }
