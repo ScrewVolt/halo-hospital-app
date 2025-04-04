@@ -112,27 +112,36 @@ export default function Patients() {
     return `Unspecified: ${text}`
   }
 
+  const restartRecognition = () => {
+    if (!recognitionRef.current) return
+    try {
+      recognitionRef.current.start()
+      console.log("🎤 Recognition restarted")
+    } catch (err) {
+      console.warn("Restart failed:", err.message)
+    }
+  }
+
   const startRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return alert("Speech recognition not supported.")
-  
+
     const recognition = new SpeechRecognition()
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = "en-US"
-  
+
     recognitionRef.current = recognition
+    shouldRestartRef.current = true
     setRecognizing(true)
-  
+
     let fullTranscript = ""
     let lastSentHash = ""
-  
-    const hash = (str) =>
-      str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
-  
+    const hash = (str) => str.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0)
+
     recognition.onresult = (event) => {
       let interimTranscript = ""
-  
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
         if (event.results[i].isFinal) {
@@ -141,41 +150,42 @@ export default function Patients() {
           interimTranscript = transcript
         }
       }
-  
+
       setLiveTranscript(interimTranscript)
-  
+
       if (silenceTimer.current) clearTimeout(silenceTimer.current)
-  
+
       silenceTimer.current = setTimeout(() => {
         const cleaned = fullTranscript.trim().replace(/\s+/g, " ")
         const currentHash = hash(cleaned)
-  
+
         if (cleaned && currentHash !== lastSentHash) {
           const speakerTagged = tagSpeaker(cleaned)
           handleSend(speakerTagged)
           lastSentHash = currentHash
         }
-  
+
         fullTranscript = ""
         setLiveTranscript("")
       }, 1500)
     }
-  
+
     recognition.onerror = (event) => {
       console.warn("Speech recognition error:", event.error)
-      if (event.error !== "aborted") restartRecognition()
-    }
-  
-    recognition.onend = () => {
-      if (recognizing) {
-        console.log("🎤 Restarting recognition")
-        restartRecognition()
+      if (shouldRestartRef.current && event.error !== "aborted") {
+        setTimeout(() => restartRecognition(), 300)
       }
     }
-  
+
+    recognition.onend = () => {
+      if (shouldRestartRef.current) {
+        console.log("🎤 Recognition ended, restarting...")
+        setTimeout(() => restartRecognition(), 300)
+      }
+    }
+
     recognition.start()
   }
-  
 
   const stopRecognition = () => {
     shouldRestartRef.current = false
