@@ -10,8 +10,8 @@ function App() {
     <AuthProvider>
       <Router>
         <Routes>
-          {/* 🔐 Public Route */}
-          <Route path="/" element={<Login />} />
+          {/* 🔓 Public Route */}
+          <Route path="/login" element={<Login />} />
 
           {/* 🔒 Protected Routes */}
           <Route
@@ -22,10 +22,13 @@ function App() {
               </ProtectedRoute>
             }
           >
-            {/* ✅ Default route inside Layout is /patients */}
-            <Route index element={<Navigate to="/patients" />} />
+            {/* 🏠 Redirect default `/` to `/patients` */}
+            <Route index element={<Navigate to="/patients" replace />} />
             <Route path="patients" element={<Patients />} />
           </Route>
+
+          {/* 🚨 Catch-all: redirect unknown routes to login */}
+          <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>
     </AuthProvider>
