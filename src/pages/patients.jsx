@@ -111,23 +111,30 @@ export default function Patients() {
     return `Unspecified: ${text}`
   }
 
+  const restartRecognition = () => {
+    if (recognitionRef.current) {
+      recognitionRef.current.stop()
+      recognitionRef.current.start()
+    }
+  }
+
   const startRecognition = () => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
     if (!SpeechRecognition) return alert("Speech recognition not supported.")
-  
+
     const recognition = new SpeechRecognition()
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = "en-US"
-  
+
     recognitionRef.current = recognition
     setRecognizing(true)
-  
-    let tempFinal = "" // Accumulate final sentences
-  
+
+    let tempFinal = ""
+
     recognition.onresult = (event) => {
       let interimTranscript = ""
-  
+
       for (let i = event.resultIndex; i < event.results.length; ++i) {
         const transcript = event.results[i][0].transcript.trim()
         if (event.results[i].isFinal) {
@@ -136,12 +143,11 @@ export default function Patients() {
           interimTranscript = transcript
         }
       }
-  
+
       setLiveTranscript(interimTranscript)
-  
+
       if (silenceTimer.current) clearTimeout(silenceTimer.current)
-  
-      // Use 1500ms as more natural pause window
+
       silenceTimer.current = setTimeout(() => {
         if (tempFinal.trim()) {
           const speakerTagged = tagSpeaker(tempFinal.trim())
@@ -151,19 +157,21 @@ export default function Patients() {
         setLiveTranscript("")
       }, 1500)
     }
-  
+
     recognition.onerror = (event) => {
       console.error("Speech recognition error:", event.error)
-      setRecognizing(false)
+      restartRecognition()
     }
-  
+
     recognition.onend = () => {
-      setRecognizing(false)
-      setLiveTranscript("")
+      if (recognizing) {
+        console.log("🎤 Restarting recognition (Android auto-stop workaround)")
+        restartRecognition()
+      }
     }
-  
+
     recognition.start()
-  }  
+  }
 
   const stopRecognition = () => {
     if (recognitionRef.current) {
@@ -322,11 +330,16 @@ ${chatText}
                 )}
               </div>
             ))}
-            {recognizing && liveTranscript && (
-              <div
-                className="text-gray-500 italic"
-                dangerouslySetInnerHTML={{ __html: `🎙 ${highlightKeywords(liveTranscript)}...` }}
-              />
+            {recognizing && (
+              <div className="text-xs text-blue-500 italic mt-1 animate-pulse">
+                🎤 Listening... (tap Stop to end)
+                {liveTranscript && (
+                  <span
+                    className="block italic text-gray-500"
+                    dangerouslySetInnerHTML={{ __html: highlightKeywords(liveTranscript) }}
+                  />
+                )}
+              </div>
             )}
             <div ref={scrollRef} />
           </div>
@@ -361,7 +374,6 @@ ${chatText}
             </button>
           </div>
 
-          {/* Export block remains unchanged */}
           <div ref={exportRef} className="mt-8 text-sm leading-relaxed p-4 max-w-3xl mx-auto bg-white text-black">
             <h2 className="text-xl font-bold mb-2">{selectedPatient.name} – Patient Report</h2>
             <hr className="my-3 border-gray-300" />
