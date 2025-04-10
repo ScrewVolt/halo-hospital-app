@@ -10,9 +10,14 @@ const Sidebar = ({ onSearch, onAddPatient }) => {
     if (onSearch) onSearch(query);
     };
 
+    const [room, setRoom] = useState("");
+    
     const handleAdd = () => {
-    if (onAddPatient) onAddPatient(query);
+      if (onAddPatient) onAddPatient(query, room);
+      setQuery("");
+      setRoom("");
     };
+    
 
 
   return (
@@ -25,24 +30,32 @@ const Sidebar = ({ onSearch, onAddPatient }) => {
       H.A.L.O.
     </h1>
 
-    <div className="flex flex-col items-center gap-2 w-full">
-      <input
-        type="text"
-        placeholder="Search/Add"
-        className="rounded-full px-3 py-1 text-black w-full text-sm"
-        value={query}
-        onChange={(e) => {
-          setQuery(e.target.value);
-          if (onSearch) onSearch(e.target.value);
-        }}
-      />
-      <button
-        onClick={handleAdd}
-        className="bg-white text-blue-700 font-bold px-3 py-1 rounded-full w-full text-sm hover:bg-gray-200 transition"
-      >
-        + Add Patient
-      </button>
-    </div>
+<div className="flex flex-col items-center gap-2 w-full">
+  <input
+    type="text"
+    placeholder="Patient Name"
+    className="rounded-full px-3 py-1 text-black w-full text-sm"
+    value={query}
+    onChange={(e) => {
+      setQuery(e.target.value);
+      if (onSearch) onSearch(e.target.value);
+    }}
+  />
+  <input
+    type="text"
+    placeholder="Room #"
+    className="rounded-full px-3 py-1 text-black w-full text-sm"
+    value={room}
+    onChange={(e) => setRoom(e.target.value)}
+  />
+  <button
+    onClick={handleAdd}
+    className="bg-white text-blue-700 font-bold px-3 py-1 rounded-full w-full text-sm hover:bg-gray-200 transition"
+  >
+    + Add Patient
+  </button>
+</div>
+
   </div>
 
   <div className="text-xs text-blue-200 text-center opacity-60">

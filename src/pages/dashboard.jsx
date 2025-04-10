@@ -28,18 +28,22 @@ const Dashboard = () => {
     setPatients(patientList);
   };
 
-  const handleAddPatient = async (name) => {
-    if (!name.trim()) return;
-    const alreadyExists = patients.some((p) => p.name.toLowerCase() === name.toLowerCase());
+  const handleAddPatient = async (name, room) => {
+    if (!name.trim() || !room.trim()) return;
+  
+    const alreadyExists = patients.some(
+      (p) => p.name.toLowerCase() === name.toLowerCase()
+    );
     if (alreadyExists) return;
   
     await addDoc(collection(db, "users", userId, "patients"), {
-      name: name,
+      name: name.trim(),
+      room: room.trim(),
       createdAt: new Date(),
     });
-    fetchPatients();
-  };
   
+    fetchPatients();
+  };  
 
   const handleDeletePatient = async (id) => {
     await deleteDoc(doc(db, "users", userId, "patients", id));
@@ -68,9 +72,10 @@ const Dashboard = () => {
                 key={patient.id}
                 className="flex px-6 py-4 hover:bg-gray-100 transition cursor-pointer text-lg"
               >
-                <div className="flex-1" onClick={() => goToPatient(patient.id)}>
-                  {patient.name}
-                </div>
+<div className="flex-1 cursor-pointer" onClick={() => goToPatient(patient.id)}>
+  {patient.name} <span className="text-sm text-gray-500 ml-2">({patient.room})</span>
+</div>
+
                 <div
                   className="w-8 text-center text-red-500 font-bold hover:text-red-700"
                   onClick={() => handleDeletePatient(patient.id)}
