@@ -76,8 +76,6 @@ def generate_summary():
     <summary paragraph here>
 
     **Nursing Chart:**
-    *Generated on: YYYY-MM-DD at HH:MM UTC*
-    
     **Assessment:**
     ...
 

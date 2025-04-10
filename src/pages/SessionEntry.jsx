@@ -275,10 +275,14 @@ export default function SessionEntry() {
         sessionId
       );
   
-      await updateDoc(sessionRef, {
-        summary: summaryPart,
-        nursingChart: chartPart,
-      });
+      const timestamp = new Date().toISOString();
+
+    await updateDoc(sessionRef, {
+    summary: summaryPart,
+    nursingChart: chartPart,
+    generatedAt: timestamp, // 🕒 Save it
+    });
+
 
       setSummary(summaryPart);
       setNursingChart(chartPart);
@@ -424,6 +428,11 @@ export default function SessionEntry() {
 {nursingChart && (
   <>
     <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-4">Nursing Chart</h3>
+    {generatedAt && (
+      <p className="text-sm text-gray-500 mb-3 italic">
+        Generated on: {new Date(generatedAt).toLocaleString()}
+      </p>
+    )}
     <div className="space-y-4">
       {["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"].map((section) => {
         const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
