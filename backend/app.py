@@ -41,9 +41,7 @@ def generate_summary():
         return jsonify({"error": "No conversation provided"}), 400
 
     prompt = f"""
-    You are a clinical assistant summarizing a medical conversation between a nurse and a patient.
-
-    The conversation is below. Your task is to return a clinically clear **summary** and **nursing chart**, with no repetition across sections.
+    You are a clinical assistant summarizing a medical interaction between a nurse and a patient.
 
     ---
 
@@ -53,32 +51,47 @@ def generate_summary():
     ---
 
     Instructions:
-    1. First, write a **Summary** as a single, concise paragraph that describes the reason for visit, symptoms, diagnosis, and resolution.
-    2. Then, write a **Nursing Chart** with exactly the following 5 sections:
-        - **Assessment**: Presenting symptoms, history, and nurse observations.
-        - **Diagnosis**: The clinical diagnosis or suspected issue.
-        - **Plan**: What was planned — tests, medications, instructions.
-        - **Interventions**: What was done during this session.
-        - **Evaluation**: Results of interventions and patient response.
 
-    Important formatting rules:
-    - Use clear markdown.
-    - Each section must be **standalone**. Do not nest or repeat one section inside another.
-    - Do **not** include headers like "**Diagnosis:**" inside other sections.
-    - Do **not** repeat content across sections — keep each one focused.
+    You will return two clearly formatted sections:
+    1. A **Summary** — a short paragraph explaining what the visit was about and the outcome.
+    2. A **Nursing Chart** — divided into 5 sections:
+    - **Assessment**
+    - **Diagnosis**
+    - **Plan**
+    - **Interventions**
+    - **Evaluation**
 
-    Respond only with:
+    **Rules for Nursing Chart output:**
+    - Each section must start with `**SectionName:**` on its own line.
+    - Do NOT include other sections inside a section (e.g. don’t nest Plan inside Assessment).
+    - Do NOT repeat the same content across multiple sections.
+    - Each section should be short and unique.
+    - Respond using clean markdown. Use plain text and bullets as needed.
+
+    ---
+
+    Respond ONLY with this format:
 
     **Summary:**
-    ...
+    <summary paragraph here>
 
     **Nursing Chart:**
-    - **Assessment:** ...
-    - **Diagnosis:** ...
-    - **Plan:** ...
-    - **Interventions:** ...
-    - **Evaluation:** ...
+    **Assessment:**
+    ...
+
+    **Diagnosis:**
+    ...
+
+    **Plan:**
+    ...
+
+    **Interventions:**
+    ...
+
+    **Evaluation:**
+    ...
     """
+
 
 
 
