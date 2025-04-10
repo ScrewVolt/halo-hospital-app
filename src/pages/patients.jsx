@@ -313,9 +313,7 @@ export default function Patients() {
                     value={editingValue}
                     onChange={(e) => setEditingValue(e.target.value)}
                     onBlur={handleEditSave}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleEditSave()
-                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleEditSave()}
                     className="w-full p-1 border rounded"
                     autoFocus
                   />
@@ -339,7 +337,7 @@ export default function Patients() {
                 )}
               </div>
             )}
-            <div/>
+            <div />
           </div>
 
           <input
@@ -351,23 +349,11 @@ export default function Patients() {
           />
 
           <div className="flex gap-2 mt-2 flex-wrap">
-            <button onClick={() => handleSend()} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-              Send
-            </button>
-            <button onClick={startRecognition} disabled={recognizing} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">
-              Start Recognition
-            </button>
-            <button onClick={stopRecognition} disabled={!recognizing} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">
-              Stop Recognition
-            </button>
-            <button onClick={handleExport} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded">
-              Export
-            </button>
-            <button
-              onClick={handleGenerateSummary}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50"
-              disabled={loadingSummary}
-            >
+            <button onClick={() => handleSend()} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Send</button>
+            <button onClick={startRecognition} disabled={recognizing} className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded">Start Recognition</button>
+            <button onClick={stopRecognition} disabled={!recognizing} className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded">Stop Recognition</button>
+            <button onClick={handleExport} className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded">Export</button>
+            <button onClick={handleGenerateSummary} className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded disabled:opacity-50" disabled={loadingSummary}>
               {loadingSummary ? "Generating..." : "Generate Summary"}
             </button>
           </div>
@@ -376,10 +362,20 @@ export default function Patients() {
             <h2 className="text-xl font-bold mb-2">{selectedPatient.name} – Patient Report</h2>
             <hr className="my-3 border-gray-300" />
 
-            <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">Chat Transcript</h3>
-            <pre className="whitespace-pre-wrap mb-4">
-              {messages.map((m) => m.text).join("\n")}
-            </pre>
+            <div className="mb-4">
+              <button onClick={() => setShowTranscript(!showTranscript)} className="text-blue-600 hover:underline font-medium">
+                {showTranscript ? "Hide" : "Show"} Chat Transcript
+              </button>
+
+              {showTranscript && (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">Chat Transcript</h3>
+                  <pre className="whitespace-pre-wrap mb-4">
+                    {messages.map((m) => m.text).join("\n")}
+                  </pre>
+                </>
+              )}
+            </div>
 
             {summary && (
               <>
@@ -388,12 +384,27 @@ export default function Patients() {
               </>
             )}
 
-            {nursingChart && (
-              <>
-                <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-2">Nursing Chart</h3>
-                <pre className="whitespace-pre-wrap text-gray-800">{nursingChart}</pre>
-              </>
-            )}
+{nursingChart && (
+  <>
+    <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-2">Nursing Chart</h3>
+    <div className="space-y-4">
+      {["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"].map((section) => {
+        const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*(.*?)\\s*(?=\\*\\*|$)`, "s")
+        const match = nursingChart.match(regex)
+        const content = match ? match[1].trim() : null
+
+        return content ? (
+          <div key={section} className="border border-purple-300 rounded-xl p-4 bg-purple-50 shadow-sm">
+            <h4 className="text-md font-semibold text-purple-800 mb-2">{section}</h4>
+            <p className="text-gray-700 whitespace-pre-wrap">{content}</p>
+          </div>
+        ) : null
+      })}
+    </div>
+  </>
+)}
+
+
           </div>
         </>
       )}
