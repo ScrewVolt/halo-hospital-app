@@ -31,6 +31,7 @@ export default function Patients() {
   const [liveTranscript, setLiveTranscript] = useState("")
   const [editingMessageId, setEditingMessageId] = useState(null)
   const [editingValue, setEditingValue] = useState("")
+  const [showTranscript, setShowTranscript] = useState(false)
 
   const user = auth.currentUser
   const exportRef = useRef(null)
