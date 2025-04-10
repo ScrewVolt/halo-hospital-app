@@ -101,20 +101,16 @@ export default function SessionEntry() {
       );
       const sessionSnap = await getDoc(sessionRef);
       const sessionData = sessionSnap.data() || {};
-
+  
       setSummary(sessionData.summary || "");
       setNursingChart(sessionData.nursingChart || "");
-
-      // Try to load patient name
-      const patientRef = doc(db, "users", user.uid, "patients", patientId);
-      const patientSnap = await getDoc(patientRef);
-      setPatientName(patientSnap.data()?.name || "Patient");
     };
-
+  
     if (user && patientId && sessionId) {
       loadSessionData();
     }
   }, [user, patientId, sessionId]);
+  
 
   const handleSend = async (text) => {
     const content = text || chatInput;
@@ -281,6 +277,9 @@ export default function SessionEntry() {
         summary: summaryPart,
         nursingChart: chartPart,
       });
+
+      setSummary(summaryPart);
+      setNursingChart(chartPart);
   
       alert("✅ Summary and Nursing Chart saved.");
     } catch (err) {
@@ -425,7 +424,7 @@ export default function SessionEntry() {
     <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-2">Nursing Chart</h3>
     <div className="space-y-4">
       {["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"].map((section) => {
-        const regex = new RegExp(`${section}\\*{0,2}:\\s*(.*?)\\s*(?=\\n|\\r|${section === "Evaluation" ? "$" : "\\w+:|\\*\\*"})`, "si");
+        const regex = new RegExp(`${section}:\\s*([\\s\\S]*?)(?=\\n\\s*\\w+:|$)`, "i");
         const match = nursingChart.match(regex);
         const content = match ? match[1].trim() : null;
 
