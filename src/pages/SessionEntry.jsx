@@ -423,13 +423,27 @@ export default function SessionEntry() {
             )}
 {nursingChart && (
   <>
-    <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-2">Nursing Chart</h3>
-    <div
-      className="prose prose-sm max-w-none text-gray-800"
-      dangerouslySetInnerHTML={{ __html: marked.parse(nursingChart) }}
-    />
+    <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-4">Nursing Chart</h3>
+    <div className="space-y-4">
+      {["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"].map((section) => {
+        const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
+        const match = nursingChart.match(regex);
+        const content = match ? match[1].trim() : "";
+
+        return content ? (
+          <div key={section} className="border border-purple-300 rounded-xl p-4 bg-purple-50 shadow-sm">
+            <h4 className="text-md font-semibold text-purple-800 mb-2">{section}</h4>
+            <div
+              className="text-gray-700 prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
+            />
+          </div>
+        ) : null;
+      })}
+    </div>
   </>
 )}
+
 
 
           </div>
