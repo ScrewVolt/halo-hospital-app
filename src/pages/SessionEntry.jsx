@@ -58,6 +58,8 @@ export default function SessionEntry() {
   const [editingValue, setEditingValue] = useState("");
   const [showTranscript, setShowTranscript] = useState(false);
   const [patientName, setPatientName] = useState("Patient");
+  const [generatedAt, setGeneratedAt] = useState(null);
+
 
   const user = auth.currentUser;
   const exportRef = useRef(null);
@@ -106,6 +108,7 @@ export default function SessionEntry() {
   
       setSummary(sessionData.summary || "");
       setNursingChart(sessionData.nursingChart || "");
+      setGeneratedAt(sessionData.generatedAt || null); // ✅ add this
     };
   
     if (user && patientId && sessionId) {
