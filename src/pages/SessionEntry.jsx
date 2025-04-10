@@ -59,6 +59,9 @@ export default function SessionEntry() {
   const [showTranscript, setShowTranscript] = useState(false);
   const [patientName, setPatientName] = useState("Patient");
   const [generatedAt, setGeneratedAt] = useState(null);
+  const [startedAt, setStartedAt] = useState(null);
+  const [lastUsedAt, setLastUsedAt] = useState(null);
+
 
 
   const user = auth.currentUser;
@@ -109,6 +112,9 @@ export default function SessionEntry() {
       setSummary(sessionData.summary || "");
       setNursingChart(sessionData.nursingChart || "");
       setGeneratedAt(sessionData.generatedAt || null); // ✅ add this
+      setStartedAt(sessionData.startedAt || null);
+      setLastUsedAt(sessionData.lastUsedAt || null);
+
     };
   
     if (user && patientId && sessionId) {
@@ -420,6 +426,16 @@ export default function SessionEntry() {
               {loadingSummary ? "Generating..." : "Generate Summary"}
             </button>
           </div>
+          {(startedAt || lastUsedAt) && (
+  <div className="text-sm text-gray-500 mb-4 space-y-1 italic">
+    {startedAt && (
+      <p>Session started: {new Date(startedAt).toLocaleString()}</p>
+    )}
+    {lastUsedAt && (
+      <p>Last updated: {new Date(lastUsedAt).toLocaleString()}</p>
+    )}
+  </div>
+)}
 
           <div ref={exportRef} className="mt-8">
             {summary && (

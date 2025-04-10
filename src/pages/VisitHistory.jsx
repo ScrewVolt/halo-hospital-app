@@ -37,10 +37,13 @@ const VisitHistory = () => {
   };
 
   const handleAddSession = async () => {
+    const now = new Date().toISOString();
     const newSessionRef = await addDoc(
       collection(db, "users", userId, "patients", patientId, "sessions"),
       {
         createdAt: serverTimestamp(),
+        startedAt: now,
+        lastUsedAt: now,
       }
     );
     navigate(`/session/${patientId}/${newSessionRef.id}`);
