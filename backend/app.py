@@ -41,32 +41,45 @@ def generate_summary():
         return jsonify({"error": "No conversation provided"}), 400
 
     prompt = f"""
-    You are a clinical assistant summarizing a medical interaction between a nurse and a patient.
+    You are a clinical assistant summarizing a medical conversation between a nurse and a patient.
+
+    The conversation is below. Your task is to return a clinically clear **summary** and **nursing chart**, with no repetition across sections.
+
+    ---
 
     Conversation:
-    ---
     {chat_text}
+
     ---
 
     Instructions:
-    1. Identify symptoms, medications, actions taken, and any responses or concerns.
-    2. Focus on key clinical terms like "pain", "medication", "blood pressure", "vomiting", "history", "follow-up", etc.
-    3. Create two clearly separated sections:
+    1. First, write a **Summary** as a single, concise paragraph that describes the reason for visit, symptoms, diagnosis, and resolution.
+    2. Then, write a **Nursing Chart** with exactly the following 5 sections:
+        - **Assessment**: Presenting symptoms, history, and nurse observations.
+        - **Diagnosis**: The clinical diagnosis or suspected issue.
+        - **Plan**: What was planned — tests, medications, instructions.
+        - **Interventions**: What was done during this session.
+        - **Evaluation**: Results of interventions and patient response.
+
+    Important formatting rules:
+    - Use clear markdown.
+    - Each section must be **standalone**. Do not nest or repeat one section inside another.
+    - Do **not** include headers like "**Diagnosis:**" inside other sections.
+    - Do **not** repeat content across sections — keep each one focused.
+
+    Respond only with:
 
     **Summary:**
-    A concise paragraph summarizing the full conversation and patient status.
+    ...
 
     **Nursing Chart:**
-    Use the following format, listing each section clearly and independently — do not repeat content across sections:
-
-    - **Assessment:** (Initial findings, symptoms, and observations)
-    - **Diagnosis:** (Formal or working diagnosis)
-    - **Plan:** (Planned treatment, medications, tests)
-    - **Interventions:** (Actions taken during the visit)
-    - **Evaluation:** (Outcome, patient response, next steps)
-
-    Respond in **Markdown** format. Do NOT nest other chart sections inside each heading.
+    - **Assessment:** ...
+    - **Diagnosis:** ...
+    - **Plan:** ...
+    - **Interventions:** ...
+    - **Evaluation:** ...
     """
+
 
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
