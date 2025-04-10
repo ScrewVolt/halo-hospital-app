@@ -11,20 +11,23 @@ from openai import OpenAI
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": ["https://halo-hospital.netlify.app", "http://localhost:5173"]}}, supports_credentials=True)
+CORS(app, resources={r"/*": {
+    "origins": [
+        r"https://.*\.netlify\.app",
+        "http://localhost:5173"
+    ]
+}}, supports_credentials=True)
 
 @app.after_request
 def apply_cors_headers(response):
     origin = request.headers.get("Origin")
-    allowed_origins = ["https://halo-hospital.netlify.app", "http://localhost:5173"]
-
-    if origin in allowed_origins:
+    if origin and ("netlify.app" in origin or "localhost" in origin):
         response.headers["Access-Control-Allow-Origin"] = origin
         response.headers["Access-Control-Allow-Credentials"] = "true"
         response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
         response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
-
     return response
+
 
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
