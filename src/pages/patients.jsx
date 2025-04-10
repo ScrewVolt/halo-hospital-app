@@ -225,7 +225,7 @@ export default function Patients() {
   `;
   
     try {
-      const response = await fetch("https://halo-backend-rrpc.onrender.com", {
+      const response = await fetch("https://halo-backend-rrpc.onrender.com/summary", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
