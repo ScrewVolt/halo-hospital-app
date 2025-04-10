@@ -14,6 +14,8 @@ import { auth, db } from "../firebase";
 import Sidebar from "../components/Sidebar";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { marked } from "marked";
+
 
 const highlightKeywords = (text) => {
     if (!text) return "";
