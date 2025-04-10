@@ -73,8 +73,12 @@ const Dashboard = () => {
                 className="flex px-6 py-4 hover:bg-gray-100 transition cursor-pointer text-lg"
               >
 <div className="flex-1 cursor-pointer" onClick={() => goToPatient(patient.id)}>
-  {patient.name} <span className="text-sm text-gray-500 ml-2">({patient.room})</span>
+  {patient.name}
+  {patient.room && (
+    <span className="text-sm text-gray-500 ml-2">Room Number #{patient.room}</span>
+  )}
 </div>
+
 
                 <div
                   className="w-8 text-center text-red-500 font-bold hover:text-red-700"
