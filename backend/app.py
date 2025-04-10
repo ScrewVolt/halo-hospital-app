@@ -5,6 +5,8 @@ import openai
 from dotenv import load_dotenv
 from pathlib import Path
 
+from openai import OpenAI
+
 # Load environment variables
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
@@ -52,14 +54,17 @@ Instructions:
 Ensure accuracy and clarity in professional tone.
 """
 
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
     try:
-        response = openai.ChatCompletion.create(
+        response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.3
+            temperature=0.3,
         )
         summary = response.choices[0].message.content
         return jsonify({"summary": summary})
+
     except Exception as e:
         import traceback
         print("🔥 Exception occurred while generating summary:")
