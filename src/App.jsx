@@ -1,38 +1,42 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom"
-import Login from "./pages/login"
-import Patients from "./pages/patients"
-import ProtectedRoute from "./components/protectedRoute"
-import Layout from "./components/Layout"
-import { AuthProvider } from "./authContext"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Dashboard from "./pages/dashboard";
+import VisitHistory from "./pages/VisitHistory";
+import SessionEntry from "./pages/SessionEntry";
+import ProtectedRoute from "./components/protectedRoute";
+import Login from "./pages/login"; // Your existing login page
 
 function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <Routes>
-          {/* 🔓 Public Route */}
-          <Route path="/login" element={<Login />} />
-
-          {/* 🔒 Protected Routes */}
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <Layout />
-              </ProtectedRoute>
-            }
-          >
-            {/* 🏠 Redirect default `/` to `/patients` */}
-            <Route index element={<Navigate to="/patients" replace />} />
-            <Route path="patients" element={<Patients />} />
-          </Route>
-
-          {/* 🚨 Catch-all: redirect unknown routes to login */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </Router>
-    </AuthProvider>
-  )
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route
+  path="/dashboard"
+  element={
+    <ProtectedRoute>
+      <Dashboard />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/patient/:patientId"
+  element={
+    <ProtectedRoute>
+      <VisitHistory />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/session/:patientId/:sessionId"
+  element={
+    <ProtectedRoute>
+      <SessionEntry />
+    </ProtectedRoute>
+  }
+/>
+      </Routes>
+    </Router>
+  );
 }
 
-export default App
+export default App;

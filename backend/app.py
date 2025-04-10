@@ -15,11 +15,17 @@ CORS(app, resources={r"/*": {"origins": ["https://halo-hospital.netlify.app", "h
 
 @app.after_request
 def apply_cors_headers(response):
-    response.headers["Access-Control-Allow-Origin"] = "https://halo-hospital.netlify.app"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
-    response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+    origin = request.headers.get("Origin")
+    allowed_origins = ["https://halo-hospital.netlify.app", "http://localhost:5173"]
+
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Headers"] = "Content-Type,Authorization"
+        response.headers["Access-Control-Allow-Methods"] = "GET,POST,OPTIONS"
+
     return response
+
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 

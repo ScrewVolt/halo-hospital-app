@@ -10,15 +10,17 @@ export default function Login() {
   const navigate = useNavigate()
 
   const handleLogin = async (e) => {
-    e.preventDefault()
+    e.preventDefault(); // ✅ prevent form reload
     try {
-      await signInWithEmailAndPassword(auth, email, password)
-      navigate("/")
+      await signInWithEmailAndPassword(auth, email, password);
+      navigate("/dashboard");
     } catch (err) {
-      setError("Invalid login credentials.")
-      console.error(err)
+      console.error(err);
+      setError("Login failed.");
     }
-  }
+  };
+  
+  
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
