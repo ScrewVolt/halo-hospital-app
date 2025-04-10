@@ -61,8 +61,11 @@ Ensure accuracy and clarity in professional tone.
         summary = response.choices[0].message.content
         return jsonify({"summary": summary})
     except Exception as e:
-        print("❌ OpenAI API error:", e)
+        import traceback
+        print("🔥 Exception occurred while generating summary:")
+        traceback.print_exc()
         return jsonify({"error": str(e)}), 500
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
