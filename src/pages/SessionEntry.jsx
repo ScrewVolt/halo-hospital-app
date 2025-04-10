@@ -16,11 +16,32 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 const highlightKeywords = (text) => {
-  return text
-    .replace(/Data/gi, '<span class="text-blue-600 font-semibold">Data</span>')
-    .replace(/Action/gi, '<span class="text-green-600 font-semibold">Action</span>')
-    .replace(/Response/gi, '<span class="text-orange-600 font-semibold">Response</span>');
-};
+    if (!text) return "";
+  
+    const keywords = {
+      pain: "text-red-600 font-semibold",
+      medication: "text-indigo-600 font-semibold",
+      blood: "text-blue-700 font-semibold",
+      pressure: "text-blue-700 font-semibold",
+      vomiting: "text-orange-600 font-semibold",
+      history: "text-green-600 font-semibold",
+      follow: "text-green-600 font-semibold",
+      Data: "text-blue-600 font-semibold",
+      Action: "text-green-600 font-semibold",
+      Response: "text-orange-600 font-semibold",
+    };
+  
+    const pattern = new RegExp(
+      `\\b(${Object.keys(keywords).join("|")})\\b`,
+      "gi"
+    );
+  
+    return text.replace(pattern, (match) => {
+      const className = keywords[match.toLowerCase()] || "bg-yellow-200";
+      return `<span class="${className}">${match}</span>`;
+    });
+  };
+  
 
 export default function SessionEntry() {
   const { patientId, sessionId } = useParams();
