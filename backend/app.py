@@ -41,27 +41,33 @@ def generate_summary():
         return jsonify({"error": "No conversation provided"}), 400
 
     prompt = f"""
-You are a clinical assistant summarizing a medical interaction between a nurse and a patient.
+    You are a clinical assistant summarizing a medical interaction between a nurse and a patient.
 
-Conversation:
----
-{chat_text}
----
+    Conversation:
+    ---
+    {chat_text}
+    ---
 
-Instructions:
-1. Identify symptoms, medications, actions taken, and any responses or concerns.
-2. Focus on key medical terms like "pain", "medication", "blood pressure", "vomiting", "history", "follow-up", etc.
-3. Provide a concise and clinically useful **Summary**.
-4. Create a structured **Nursing Chart** using this format:
+    Instructions:
+    1. Identify symptoms, medications, actions taken, and any responses or concerns.
+    2. Focus on key clinical terms like "pain", "medication", "blood pressure", "vomiting", "history", "follow-up", etc.
+    3. Create two clearly separated sections:
 
-- Assessment:
-- Diagnosis:
-- Plan:
-- Interventions:
-- Evaluation:
+    **Summary:**
+    A concise paragraph summarizing the full conversation and patient status.
 
-Ensure accuracy and clarity in professional tone.
-"""
+    **Nursing Chart:**
+    Use the following format, listing each section clearly and independently — do not repeat content across sections:
+
+    - **Assessment:** (Initial findings, symptoms, and observations)
+    - **Diagnosis:** (Formal or working diagnosis)
+    - **Plan:** (Planned treatment, medications, tests)
+    - **Interventions:** (Actions taken during the visit)
+    - **Evaluation:** (Outcome, patient response, next steps)
+
+    Respond in **Markdown** format. Do NOT nest other chart sections inside each heading.
+    """
+
 
     client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
