@@ -425,7 +425,11 @@ export default function SessionEntry() {
             {summary && (
               <>
                 <h3 className="text-lg font-semibold text-blue-700 mb-2">AI Summary</h3>
-                <pre className="whitespace-pre-wrap mb-4 text-gray-800">{summary}</pre>
+                <div
+  className="text-gray-700 prose prose-sm max-w-none mb-4"
+  dangerouslySetInnerHTML={{ __html: marked.parse(summary) }}
+/>
+
               </>
             )}
 {nursingChart && (
