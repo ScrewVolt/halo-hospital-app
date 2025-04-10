@@ -195,73 +195,85 @@ export default function Patients() {
   }
 
   const handleGenerateSummary = async () => {
-    if (!messages.length || !user || !selectedPatient) return
-
-    setLoadingSummary(true)
-
-    const chatText = messages.map((m) => m.text).join("\n")
-
+    if (!messages.length || !user || !selectedPatient) return;
+  
+    setLoadingSummary(true);
+  
+    const chatText = messages.map((m) => m.text).join("\n");
+  
     const prompt = `
-You are a clinical assistant. Based on the following patient conversation, generate:
-
-1. A clinical summary including symptoms, possible causes, actions taken, and patient responses.
-2. A structured nursing chart using this format:
-
-- Assessment:
-- Diagnosis:
-- Plan:
-- Interventions:
-- Evaluation:
-
-Conversation:
-${chatText}
-    `
-
+  You are a clinical assistant summarizing a medical interaction between a nurse and a patient.
+  
+  Conversation:
+  ---
+  ${chatText}
+  ---
+  
+  Instructions:
+  1. Identify symptoms, medications, actions taken, and any responses or concerns.
+  2. Focus on key medical terms like "pain", "medication", "blood pressure", "vomiting", "history", "follow-up", etc.
+  3. Provide a concise and clinically useful **Summary**.
+  4. Create a structured **Nursing Chart** using this format:
+  
+  - Assessment:
+  - Diagnosis:
+  - Plan:
+  - Interventions:
+  - Evaluation:
+  
+  Ensure accuracy and clarity in professional tone.
+  `;
+  
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch("${BACKEND}/summary", {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.3
-        })
-      })
-
-      const data = await response.json()
-      const result = data.choices?.[0]?.message?.content
-
-      if (result) {
-        setSummary(result)
-        setNursingChart(result)
-
-        const patientRef = doc(
-          db,
-          "users",
-          user.uid,
-          "patients",
-          selectedPatient.id
-        )
-
-        await updateDoc(patientRef, {
-          summary: result,
-          nursingChart: result
-        })
-
-        alert("Summary and Nursing Chart saved.")
-      } else {
-        alert("No summary returned.")
+          messages: messages.map((m) => m.text).join("\n"), // 🔁 Use `messages`, not `chat`
+        }),
+      });      
+  
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+  
+      const data = await response.json();
+      const summaryResult = data.summary;
+  
+      if (!summaryResult) {
+        alert("❌ AI did not return a summary.");
+        return;
       }
+      const summaryMatch = summaryResult.match(/\*\*Summary:\*\*(.*?)\*\*Nursing Chart:\*\*/s)
+      const chartMatch = summaryResult.match(/\*\*Nursing Chart:\*\*(.*)/s)
+
+      const summaryPart = summaryMatch ? summaryMatch[1].trim() : ""
+      const chartPart = chartMatch ? chartMatch[1].trim() : ""
+
+      setSummary(summaryPart)
+      setNursingChart(chartPart)
+  
+      const patientRef = doc(
+        db,
+        "users",
+        user.uid,
+        "patients",
+        selectedPatient.id
+      );
+  
+      await updateDoc(patientRef, {
+        summary: summaryPart,
+        nursingChart: chartPart,
+      });
+  
+      alert("✅ Summary and Nursing Chart saved.");
     } catch (err) {
-      console.error(err)
-      alert("Failed to generate summary.")
+      console.error("❌ Summary generation failed:", err);
+      alert("❌ Summary generation failed.");
     } finally {
-      setLoadingSummary(false)
+      setLoadingSummary(false);
     }
-  }
+  };  
 
   const handleExport = async () => {
     if (!exportRef.current) return
