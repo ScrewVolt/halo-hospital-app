@@ -21,6 +21,10 @@ const Dashboard = () => {
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );  
 
+  const handleSearch = (value) => {
+    setSearchTerm(value);
+  };  
+
   const fetchPatients = async () => {
     const q = query(collection(db, "users", userId, "patients"));
     const snapshot = await getDocs(q);
