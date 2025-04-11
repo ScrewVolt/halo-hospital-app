@@ -17,6 +17,23 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
   };
 
   useEffect(() => {
+    if (!selectedPatient) {
+      setNotes(""); // ✅ Clear notes when patient is deselected
+      return;
+    }
+  
+    const fetchNotes = async () => {
+      if (!auth.currentUser) return;
+      const ref = doc(db, "users", auth.currentUser.uid, "patients", selectedPatient.id);
+      const snap = await getDoc(ref);
+      setNotes(snap.data()?.notes || "");
+    };
+  
+    fetchNotes();
+  }, [selectedPatient]);
+  
+
+  useEffect(() => {
     console.log("🧠 selectedPatient in Sidebar:", selectedPatient);
     const fetchNotes = async () => {
       if (!selectedPatient?.id || !auth.currentUser) return;
