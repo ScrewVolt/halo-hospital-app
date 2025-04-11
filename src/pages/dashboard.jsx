@@ -19,9 +19,10 @@ const Dashboard = () => {
     }
   }, [userId]);
 
-  const filteredPatients = patients.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );  
+  const filteredPatients = (patients || []).filter((p) =>
+    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
 
   const handleSearch = (value) => {
     setSearchTerm(value);
@@ -57,15 +58,19 @@ const Dashboard = () => {
   };
 
   const goToPatient = (id) => {
-    const patient = patients.find((p) => p.id === id);
-    setSelectedPatient(patient);
-    navigate(`/patient/${id}`);
+    const found = patients.find((p) => p.id === id);
+    if (found) {
+      setSelectedPatient(found);
+      navigate(`/patient/${id}`);
+    }
   };
+  
   
 
   return (
     <div className="flex min-h-screen bg-gray-100">
       <Sidebar
+  patients={patients}     
   onSearch={handleSearch}
   onAddPatient={handleAddPatient}
   selectedPatient={selectedPatient}

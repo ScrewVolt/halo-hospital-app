@@ -27,6 +27,7 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
 
 
   useEffect(() => {
+    console.log("🧠 selectedPatient in Sidebar:", selectedPatient);
     const fetchNotes = async () => {
       if (!selectedPatient || !auth.currentUser) return;
       const ref = doc(db, "users", auth.currentUser.uid, "patients", selectedPatient.id);
@@ -81,16 +82,17 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
         <div className="w-full mt-4">
   <label className="block text-sm text-white mb-1">Nurse Notes</label>
   <textarea
-    value={notes}
-    onChange={(e) => handleSaveNotes(e.target.value)}
-    disabled={!selectedPatient}
-    className={`w-full p-2 rounded text-sm h-28 resize-none ${
-      selectedPatient ? "text-black" : "bg-gray-200 text-gray-500 cursor-not-allowed"
-    }`}
-    placeholder={
-      selectedPatient ? "Enter patient notes..." : "Select a patient to view notes"
-    }
-  />
+  value={notes}
+  onChange={(e) => handleSaveNotes(e.target.value)}
+  disabled={!selectedPatient?.id}
+  className={`w-full p-2 rounded text-sm h-28 resize-none ${
+    selectedPatient?.id ? "text-black" : "bg-gray-200 text-gray-500 cursor-not-allowed"
+  }`}
+  placeholder={
+    selectedPatient?.id ? "Enter patient notes..." : "Select a patient to view notes"
+  }
+/>
+
 </div>
 
       </div>
