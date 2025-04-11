@@ -381,8 +381,6 @@ export default function SessionEntry() {
   
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-    <Sidebar selectedPatient={selectedPatient} /> {/* ✅ This line is the key */}
     <div className="flex-1 p-8">
       <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
         Session with {patientName}
@@ -527,7 +525,6 @@ export default function SessionEntry() {
           )}
         </div>
       </div>
-    </div>
     </div>
   );
 }
