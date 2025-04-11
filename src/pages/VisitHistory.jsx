@@ -10,7 +10,8 @@ import {
   query,
   orderBy,
   serverTimestamp,
-  getDoc
+  getDoc,
+  onSnapshot, // ✅ Add this line
 } from "firebase/firestore";
 import { useOutletContext } from "react-router-dom";
 
@@ -38,18 +39,25 @@ const VisitHistory = () => {
     }
   };
 
-  const fetchSessions = async () => {
+  useEffect(() => {
+    if (!userId || !patientId) return;
+  
     const q = query(
       collection(db, "users", userId, "patients", patientId, "sessions"),
       orderBy("createdAt", "desc")
     );
-    const snapshot = await getDocs(q);
-    const sessionList = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setSessions(sessionList);
-  };
+  
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const sessionList = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setSessions(sessionList);
+    });
+  
+    return () => unsubscribe(); // Cleanup on unmount
+  }, [userId, patientId]);
+  
 
   const handleAddSession = async () => {
     const now = new Date().toISOString();
