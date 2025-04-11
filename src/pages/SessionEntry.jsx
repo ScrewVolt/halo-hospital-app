@@ -144,6 +144,7 @@ export default function SessionEntry() {
       {
         text: fullMessage,
         timestamp: new Date(),
+        lastUsedAt: new Date().toISOString(),
       }
     );
 
@@ -290,11 +291,13 @@ export default function SessionEntry() {
     summary: summaryPart,
     nursingChart: chartPart,
     generatedAt: timestamp, // 🕒 Save it
+    lastUsedAt: new Date().toISOString(),
     });
 
 
       setSummary(summaryPart);
       setNursingChart(chartPart);
+      
   
       alert("✅ Summary and Nursing Chart saved.");
     } catch (err) {
