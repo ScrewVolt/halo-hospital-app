@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { auth, db } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
-const Sidebar = ({ onSearch, onAddPatient, selectedPatient }) => {
+const Sidebar = ({ onSearch, onAddPatient, selectedPatient, patients }) => {
   const navigate = useNavigate();
 
   const [query, setQuery] = useState("");
@@ -15,6 +15,16 @@ const Sidebar = ({ onSearch, onAddPatient, selectedPatient }) => {
     setQuery("");
     setRoom("");
   };
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const filteredPatients = patients.filter(p =>
+  p.name.toLowerCase().includes(searchQuery.toLowerCase())
+);
+
+  const handleSearch = (value) => {
+    setSearchQuery(value);
+  };
+
 
   useEffect(() => {
     const fetchNotes = async () => {
