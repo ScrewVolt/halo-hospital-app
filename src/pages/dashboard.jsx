@@ -1,33 +1,42 @@
 import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
-import { collection, getDocs, addDoc, deleteDoc, doc, query } from "firebase/firestore";
-import { useNavigate } from "react-router-dom";
-import Sidebar from "../components/Sidebar";
-import { useLocation } from "react-router-dom";
+import {
+  collection,
+  getDocs,
+  addDoc,
+  deleteDoc,
+  doc,
+  query,
+} from "firebase/firestore";
+import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
-  const [newPatientName, setNewPatientName] = useState("");
-  const navigate = useNavigate();
-  const userId = auth.currentUser?.uid;
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedPatient, setSelectedPatient] = useState(null);
+  const navigate = useNavigate();
   const location = useLocation();
+  const userId = auth.currentUser?.uid;
 
-useEffect(() => {
-  const storedId = sessionStorage.getItem("selectedPatientId");
-  if (storedId && patients.length > 0) {
-    const match = patients.find((p) => p.id === storedId);
-    if (match) setSelectedPatient(match);
-  }
-}, [location.pathname, patients]);
-
+  // ⬇️ Grab context methods for syncing Sidebar
+  const { selectedPatient, setSelectedPatient } = useOutletContext();
 
   useEffect(() => {
     if (userId) {
       fetchPatients();
+      sessionStorage.removeItem("selectedPatientId"); // Clear stored patient
+      setSelectedPatient(null); // 🔒 Lock notes again
     }
   }, [userId]);
+
+  const fetchPatients = async () => {
+    const q = query(collection(db, "users", userId, "patients"));
+    const snapshot = await getDocs(q);
+    const patientList = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+    setPatients(patientList);
+  };
 
   const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -35,20 +44,6 @@ useEffect(() => {
 
   const handleSearch = (value) => {
     setSearchTerm(value);
-  };
-
-  const fetchPatients = async () => {
-    const q = query(collection(db, "users", userId, "patients"));
-    const snapshot = await getDocs(q);
-    const patientList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    setPatients(patientList);
-
-    if (selectedPatient) {
-      const match = patientList.find(p => p.id === selectedPatient.id);
-      if (match) {
-        setSelectedPatient(match);
-      }
-    }
   };
 
   const handleAddPatient = async (name, room) => {
@@ -74,10 +69,9 @@ useEffect(() => {
   };
 
   const goToPatient = (id) => {
-    sessionStorage.setItem("selectedPatientId", id); // 🔐 persist before nav
+    sessionStorage.setItem("selectedPatientId", id);
     navigate(`/patient/${id}`);
   };
-  
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -95,10 +89,15 @@ useEffect(() => {
                 key={patient.id}
                 className="flex px-6 py-4 hover:bg-gray-100 transition cursor-pointer text-lg"
               >
-                <div className="flex-1 cursor-pointer" onClick={() => goToPatient(patient.id)}>
+                <div
+                  className="flex-1 cursor-pointer"
+                  onClick={() => goToPatient(patient.id)}
+                >
                   {patient.name}
                   {patient.room && (
-                    <span className="text-sm text-gray-500 ml-2">Room Number #{patient.room}</span>
+                    <span className="text-sm text-gray-500 ml-2">
+                      Room Number #{patient.room}
+                    </span>
                   )}
                 </div>
 
