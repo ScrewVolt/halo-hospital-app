@@ -3,6 +3,7 @@ import { db, auth } from "../firebase";
 import { collection, getDocs, addDoc, deleteDoc, doc, query } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
+import { useLocation } from "react-router-dom";
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
@@ -11,14 +12,16 @@ const Dashboard = () => {
   const userId = auth.currentUser?.uid;
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPatient, setSelectedPatient] = useState(null);
+  const location = useLocation();
 
-  useEffect(() => {
-    const storedId = sessionStorage.getItem("selectedPatientId");
-    if (storedId && patients.length > 0) {
-      const match = patients.find((p) => p.id === storedId);
-      if (match) setSelectedPatient(match);
-    }
-  }, [patients]);
+useEffect(() => {
+  const storedId = sessionStorage.getItem("selectedPatientId");
+  if (storedId && patients.length > 0) {
+    const match = patients.find((p) => p.id === storedId);
+    if (match) setSelectedPatient(match);
+  }
+}, [location.pathname, patients]);
+
 
   useEffect(() => {
     if (userId) {
@@ -71,11 +74,10 @@ const Dashboard = () => {
   };
 
   const goToPatient = (id) => {
-    const patient = patients.find((p) => p.id === id);
-    setSelectedPatient(patient);
-    sessionStorage.setItem("selectedPatientId", id);
+    sessionStorage.setItem("selectedPatientId", id); // 🔐 persist before nav
     navigate(`/patient/${id}`);
   };
+  
 
   return (
     <div className="flex min-h-screen bg-gray-100">
