@@ -48,20 +48,24 @@ const Dashboard = () => {
 
   const handleAddPatient = async (name, room) => {
     if (!name.trim() || !room.trim()) return;
-
+  
     const alreadyExists = patients.some(
       (p) => p.name.toLowerCase() === name.toLowerCase()
     );
     if (alreadyExists) return;
-
+  
     await addDoc(collection(db, "users", userId, "patients"), {
       name: name.trim(),
       room: room.trim(),
       createdAt: new Date(),
     });
-
-    fetchPatients();
+  
+    // ✅ Slight delay to ensure Firestore has committed the change
+    setTimeout(() => {
+      fetchPatients();
+    }, 250); // You can tweak the delay if needed
   };
+  
 
   const handleDeletePatient = async (id) => {
     await deleteDoc(doc(db, "users", userId, "patients", id));
