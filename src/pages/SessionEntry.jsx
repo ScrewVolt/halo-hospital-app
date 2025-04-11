@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useOutletContext } from "react-router-dom";
 import {
   collection,
   addDoc,
@@ -11,42 +11,38 @@ import {
   getDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase";
-import Sidebar from "../components/Sidebar";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { marked } from "marked";
 
-
 const highlightKeywords = (text) => {
-    if (!text) return "";
-  
-    const keywords = {
-      pain: "text-red-600 font-semibold",
-      medication: "text-indigo-600 font-semibold",
-      blood: "text-blue-700 font-semibold",
-      pressure: "text-blue-700 font-semibold",
-      vomiting: "text-orange-600 font-semibold",
-      history: "text-green-600 font-semibold",
-      follow: "text-green-600 font-semibold",
-      Data: "text-blue-600 font-semibold",
-      Action: "text-green-600 font-semibold",
-      Response: "text-orange-600 font-semibold",
-    };
-  
-    const pattern = new RegExp(
-      `\\b(${Object.keys(keywords).join("|")})\\b`,
-      "gi"
-    );
-  
-    return text.replace(pattern, (match) => {
-      const className = keywords[match.toLowerCase()] || "bg-yellow-200";
-      return `<span class="${className}">${match}</span>`;
-    });
+  if (!text) return "";
+  const keywords = {
+    pain: "text-red-600 font-semibold",
+    medication: "text-indigo-600 font-semibold",
+    blood: "text-blue-700 font-semibold",
+    pressure: "text-blue-700 font-semibold",
+    vomiting: "text-orange-600 font-semibold",
+    history: "text-green-600 font-semibold",
+    follow: "text-green-600 font-semibold",
+    Data: "text-blue-600 font-semibold",
+    Action: "text-green-600 font-semibold",
+    Response: "text-orange-600 font-semibold",
   };
-  
+  const pattern = new RegExp(`\\b(${Object.keys(keywords).join("|")})\\b`, "gi");
+  return text.replace(pattern, (match) => {
+    const className = keywords[match.toLowerCase()] || "bg-yellow-200";
+    return `<span class="${className}">${match}</span>`;
+  });
+};
 
 export default function SessionEntry() {
   const { patientId, sessionId } = useParams();
+  const {
+    selectedPatient,
+    setSelectedPatient,
+  } = useOutletContext();
+
   const [chatInput, setChatInput] = useState("");
   const [messages, setMessages] = useState([]);
   const [summary, setSummary] = useState("");
@@ -61,17 +57,13 @@ export default function SessionEntry() {
   const [generatedAt, setGeneratedAt] = useState(null);
   const [startedAt, setStartedAt] = useState(null);
   const [lastUsedAt, setLastUsedAt] = useState(null);
-
-
-
-  const user = auth.currentUser;
   const exportRef = useRef(null);
   const recognitionRef = useRef(null);
   const shouldRestartRef = useRef(false);
+  const user = auth.currentUser;
 
   useEffect(() => {
     if (!user || !patientId || !sessionId) return;
-
     const messagesRef = collection(
       db,
       "users",
@@ -82,16 +74,11 @@ export default function SessionEntry() {
       sessionId,
       "messages"
     );
-
     const q = query(messagesRef, orderBy("timestamp", "asc"));
     const unsub = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
       setMessages(data);
     });
-
     return () => unsub();
   }, [user, patientId, sessionId]);
 
@@ -108,35 +95,30 @@ export default function SessionEntry() {
       );
       const sessionSnap = await getDoc(sessionRef);
       const sessionData = sessionSnap.data() || {};
-  
       setSummary(sessionData.summary || "");
       setNursingChart(sessionData.nursingChart || "");
-      setGeneratedAt(sessionData.generatedAt || null); // ✅ add this
+      setGeneratedAt(sessionData.generatedAt || null);
       setStartedAt(sessionData.startedAt || null);
       setLastUsedAt(sessionData.lastUsedAt || null);
-
     };
-  
     if (user && patientId && sessionId) {
       loadSessionData();
     }
   }, [user, patientId, sessionId]);
 
-  const [selectedPatient, setSelectedPatient] = useState(null);
-
-useEffect(() => {
-  const fetchPatient = async () => {
-    if (!user || !patientId) return;
-    const ref = doc(db, "users", user.uid, "patients", patientId);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      setSelectedPatient({ id: snap.id, ...snap.data() });
-      setPatientName(snap.data().name || "Patient");
-    }
-  };
-
-  fetchPatient();
-}, [user, patientId]);
+  useEffect(() => {
+    const fetchPatient = async () => {
+      if (!user || !patientId) return;
+      const ref = doc(db, "users", user.uid, "patients", patientId);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        const data = { id: snap.id, ...snap.data() };
+        setSelectedPatient(data);
+        setPatientName(data.name || "Patient");
+      }
+    };
+    fetchPatient();
+  }, [user, patientId, setSelectedPatient]);
 
   
 

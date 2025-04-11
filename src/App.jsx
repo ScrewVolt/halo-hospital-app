@@ -59,12 +59,13 @@ function App() {
         <Route
           element={
             <ProtectedRoute>
-              <MainLayout
-                patients={patients}
-                onSearch={handleSearch}
-                onAddPatient={handleAddPatient}
-                selectedPatient={selectedPatient}
-              />
+            <MainLayout
+              patients={patients}
+              onSearch={handleSearch}
+              onAddPatient={handleAddPatient}
+              selectedPatient={selectedPatient}
+              setSelectedPatient={setSelectedPatient}
+            />
             </ProtectedRoute>
           }
         >

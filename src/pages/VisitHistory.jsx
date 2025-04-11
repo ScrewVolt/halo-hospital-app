@@ -10,7 +10,9 @@ import {
   query,
   orderBy,
   serverTimestamp,
+  getDoc
 } from "firebase/firestore";
+import { useOutletContext } from "react-router-dom";
 
 const VisitHistory = () => {
   const { patientId } = useParams();
@@ -18,9 +20,23 @@ const VisitHistory = () => {
   const navigate = useNavigate();
   const userId = auth.currentUser?.uid;
 
+  const { selectedPatient, setSelectedPatient } = useOutletContext(); // ✅ use context
+
   useEffect(() => {
-    if (userId && patientId) fetchSessions();
+    if (userId && patientId) {
+      fetchSessions();
+      fetchPatient(); // ✅ Load and sync selectedPatient
+    }
   }, [userId, patientId]);
+
+  const fetchPatient = async () => {
+    if (!userId || !patientId) return;
+    const ref = doc(db, "users", userId, "patients", patientId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      setSelectedPatient({ id: snap.id, ...snap.data() });
+    }
+  };
 
   const fetchSessions = async () => {
     const q = query(
