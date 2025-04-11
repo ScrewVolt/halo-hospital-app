@@ -17,11 +17,31 @@ const Sidebar = ({ onSearch, onAddPatient }) => {
       setQuery("");
       setRoom("");
     };
+
+    const [notes, setNotes] = useState("");
+
+useEffect(() => {
+  const fetchNotes = async () => {
+    if (!selectedPatient || !auth.currentUser) return;
+    const ref = doc(db, "users", auth.currentUser.uid, "patients", selectedPatient.id);
+    const snap = await getDoc(ref);
+    setNotes(snap.data()?.notes || "");
+  };
+  fetchNotes();
+}, [selectedPatient]);
+
+const handleSaveNotes = async (val) => {
+  setNotes(val);
+  if (!selectedPatient || !auth.currentUser) return;
+  const ref = doc(db, "users", auth.currentUser.uid, "patients", selectedPatient.id);
+  await updateDoc(ref, { notes: val });
+};
+
     
 
 
     return (
-      <div className="bg-blue-700 text-white w-80 min-h-screen flex flex-col justify-between py-6 px-4">
+      <div className="bg-blue-700 text-white w-64 min-h-screen flex flex-col justify-between py-6 px-4">
         <div className="flex flex-col items-center gap-6">
           <h1
             className="text-3xl font-bold cursor-pointer tracking-wide hover:text-blue-200 transition"
@@ -56,22 +76,25 @@ const Sidebar = ({ onSearch, onAddPatient }) => {
             </button>
           </div>
     
-          {/* New Nurse Notes section */}
-          <div className="w-full mt-6">
-            <h2 className="text-sm font-semibold mb-2">Nurse Notes</h2>
-            <textarea
-              rows={6}
-              placeholder="Patient-specific notes..."
-              className="w-full rounded p-2 text-sm text-black"
-            ></textarea>
-          </div>
+          {selectedPatient && (
+            <div className="w-full mt-4">
+              <label className="block text-sm text-white mb-1">Nurse Notes</label>
+              <textarea
+                value={notes}
+                onChange={(e) => handleSaveNotes(e.target.value)}
+                className="w-full p-2 rounded text-sm text-black h-28 resize-none"
+                placeholder="Enter patient notes..."
+              />
+            </div>
+          )}
         </div>
     
-        <div className="text-xs text-blue-200 text-center opacity-60 mt-6">
+        <div className="text-xs text-blue-200 text-center opacity-60">
           HALO v2 Beta
         </div>
       </div>
     );
+    
     
 };
 
