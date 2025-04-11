@@ -17,30 +17,20 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
   };
 
   useEffect(() => {
+    console.log("🧠 selectedPatient in Sidebar:", selectedPatient);
+
     if (!selectedPatient) {
-      setNotes(""); // ✅ Clear notes when patient is deselected
+      setNotes(""); // Clear notes if no patient is selected
       return;
     }
-  
+
     const fetchNotes = async () => {
       if (!auth.currentUser) return;
       const ref = doc(db, "users", auth.currentUser.uid, "patients", selectedPatient.id);
       const snap = await getDoc(ref);
       setNotes(snap.data()?.notes || "");
     };
-  
-    fetchNotes();
-  }, [selectedPatient]);
-  
 
-  useEffect(() => {
-    console.log("🧠 selectedPatient in Sidebar:", selectedPatient);
-    const fetchNotes = async () => {
-      if (!selectedPatient?.id || !auth.currentUser) return;
-      const ref = doc(db, "users", auth.currentUser.uid, "patients", selectedPatient.id);
-      const snap = await getDoc(ref);
-      setNotes(snap.data()?.notes || "");
-    };
     fetchNotes();
   }, [selectedPatient]);
 
@@ -72,6 +62,7 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
               if (onSearch) onSearch(e.target.value);
             }}
           />
+
           <input
             type="text"
             placeholder="Room #"
@@ -79,6 +70,7 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
             value={room}
             onChange={(e) => setRoom(e.target.value)}
           />
+
           <button
             onClick={handleAdd}
             className="bg-white text-blue-700 font-bold px-3 py-1 rounded-full w-full text-sm hover:bg-gray-200 transition"
