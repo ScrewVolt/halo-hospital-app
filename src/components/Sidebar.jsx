@@ -68,18 +68,21 @@ const Sidebar = ({ onSearch, onAddPatient, selectedPatient }) => {
             + Add Patient
           </button>
         </div>
+        <div className="w-full mt-4">
+  <label className="block text-sm text-white mb-1">Nurse Notes</label>
+  <textarea
+    value={notes}
+    onChange={(e) => handleSaveNotes(e.target.value)}
+    disabled={!selectedPatient}
+    className={`w-full p-2 rounded text-sm h-28 resize-none ${
+      selectedPatient ? "text-black" : "bg-gray-200 text-gray-500 cursor-not-allowed"
+    }`}
+    placeholder={
+      selectedPatient ? "Enter patient notes..." : "Select a patient to view notes"
+    }
+  />
+</div>
 
-        {selectedPatient && (
-          <div className="w-full mt-4">
-            <label className="block text-sm text-white mb-1">Nurse Notes</label>
-            <textarea
-              value={notes}
-              onChange={(e) => handleSaveNotes(e.target.value)}
-              className="w-full p-2 rounded text-sm text-black h-28 resize-none"
-              placeholder="Enter patient notes..."
-            />
-          </div>
-        )}
       </div>
 
       <div className="text-xs text-blue-200 text-center opacity-60">
