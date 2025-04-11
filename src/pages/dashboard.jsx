@@ -34,7 +34,16 @@ const Dashboard = () => {
     const snapshot = await getDocs(q);
     const patientList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     setPatients(patientList);
+  
+    // ⛑ Re-select patient if still in the list
+    if (selectedPatient) {
+      const match = patientList.find(p => p.id === selectedPatient.id);
+      if (match) {
+        setSelectedPatient(match); // 🔁 keep it locked in
+      }
+    }
   };
+  
 
   const handleAddPatient = async (name, room) => {
     if (!name.trim() || !room.trim()) return;
