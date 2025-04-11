@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { auth, db } from "../firebase";
 import { doc, getDoc, updateDoc } from "firebase/firestore";
 
-const Sidebar = ({ onSearch, onAddPatient, selectedPatient, patients }) => {
+const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => {
   const navigate = useNavigate();
 
   const [query, setQuery] = useState("");
