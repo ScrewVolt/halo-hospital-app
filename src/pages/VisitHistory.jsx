@@ -25,10 +25,10 @@ const VisitHistory = () => {
 
   useEffect(() => {
     if (userId && patientId) {
-      fetchSessions();
-      fetchPatient(); // ✅ Load and sync selectedPatient
+      fetchPatient(); // ✅ Only fetch patient data now
     }
   }, [userId, patientId]);
+  
 
   const fetchPatient = async () => {
     if (!userId || !patientId) return;
