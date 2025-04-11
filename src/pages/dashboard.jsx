@@ -10,6 +10,8 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const userId = auth.currentUser?.uid;
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedPatient, setSelectedPatient] = useState(null);
+
 
   useEffect(() => {
     if (userId) {
@@ -55,8 +57,11 @@ const Dashboard = () => {
   };
 
   const goToPatient = (id) => {
+    const patient = patients.find((p) => p.id === id);
+    setSelectedPatient(patient);
     navigate(`/patient/${id}`);
   };
+  
 
   return (
     <div className="flex min-h-screen bg-gray-100">
