@@ -19,9 +19,10 @@ const Dashboard = () => {
     }
   }, [userId]);
 
-  const filteredPatients = (patients || []).filter((p) =>
-    p.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredPatients = patients.filter((p) =>
+    p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
+  
   
 
   const handleSearch = (value) => {
