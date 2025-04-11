@@ -381,154 +381,151 @@ export default function SessionEntry() {
   
 
   return (
-    <div className="flex min-h-screen bg-gray-100">
-      <Sidebar />
-      <div className="flex-1 p-8">
-        <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
-          Session with {patientName}
-        </h2>
+    <div className="flex-1 p-8">
+      <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
+        Session with {patientName}
+      </h2>
   
-        <div className="bg-white rounded p-6 shadow max-w-4xl mx-auto">
-          <div className="max-h-[400px] overflow-y-auto border p-4 bg-gray-50 rounded">
-            {messages.map((msg) => (
-              <div key={msg.id} className="mb-2">
-                {editingMessageId === msg.id ? (
-                  <input
-                    type="text"
-                    value={editingValue}
-                    onChange={(e) => setEditingValue(e.target.value)}
-                    onBlur={handleEditSave}
-                    onKeyDown={(e) => e.key === "Enter" && handleEditSave()}
-                    className="w-full p-1 border rounded"
-                    autoFocus
-                  />
-                ) : (
-                  <div
-                    className="cursor-pointer"
-                    onClick={() => handleEditStart(msg)}
-                    dangerouslySetInnerHTML={{ __html: highlightKeywords(msg.text) }}
-                  />
-                )}
-              </div>
-            ))}
-            {recognizing && (
-              <div className="text-xs text-blue-500 italic mt-1 animate-pulse">
-                🎤 Listening... (tap Stop to end)
-              </div>
-            )}
-          </div>
-  
-          <input
-            type="text"
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            placeholder={`Chat with ${patientName}`}
-            className="mt-4 border p-2 rounded w-full"
-          />
-  
-          <div className="flex gap-2 mt-3 flex-wrap">
-            <button onClick={() => handleSend()} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
-              Send
-            </button>
-            <button onClick={startRecognition} disabled={recognizing} className="bg-blue-600 text-white px-4 py-2 rounded">
-              Start Recognition
-            </button>
-            <button onClick={stopRecognition} disabled={!recognizing} className="bg-red-600 text-white px-4 py-2 rounded">
-              Stop Recognition
-            </button>
-            <button
-              onClick={handleExport}
-              disabled={!summary && !nursingChart}
-              className={`px-4 py-2 rounded text-white ${
-                summary || nursingChart
-                  ? "bg-indigo-500 hover:bg-indigo-600"
-                  : "bg-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Export PDF
-            </button>
-            <button
-              onClick={handleGenerateSummary}
-              disabled={loadingSummary}
-              className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
-            >
-              {loadingSummary ? "Generating..." : "Generate Summary"}
-            </button>
-          </div>
-  
-          <button
-            onClick={() => setShowTranscript(!showTranscript)}
-            className="text-blue-700 underline text-sm mt-3"
-          >
-            {showTranscript ? "Hide Transcript" : "Show Transcript"}
-          </button>
-  
-          {showTranscript && (
-            <div className="mt-4 p-3 rounded bg-gray-50 border text-sm text-gray-700 whitespace-pre-wrap">
-              <h4 className="font-semibold mb-2 text-blue-800">Live Transcript</h4>
-              {liveTranscript ? (
-                <div
-                  dangerouslySetInnerHTML={{ __html: highlightKeywords(liveTranscript) }}
+      <div className="bg-white rounded p-6 shadow max-w-4xl mx-auto">
+        <div className="max-h-[400px] overflow-y-auto border p-4 bg-gray-50 rounded">
+          {messages.map((msg) => (
+            <div key={msg.id} className="mb-2">
+              {editingMessageId === msg.id ? (
+                <input
+                  type="text"
+                  value={editingValue}
+                  onChange={(e) => setEditingValue(e.target.value)}
+                  onBlur={handleEditSave}
+                  onKeyDown={(e) => e.key === "Enter" && handleEditSave()}
+                  className="w-full p-1 border rounded"
+                  autoFocus
                 />
               ) : (
-                <p className="italic text-gray-400">No transcript yet. Speak to begin...</p>
-              )}
-            </div>
-          )}
-  
-          {(startedAt || lastUsedAt) && (
-            <div className="text-sm text-gray-500 mb-4 space-y-1 italic mt-6">
-              {startedAt && (
-                <p>Session started: {new Date(startedAt).toLocaleString()}</p>
-              )}
-              {lastUsedAt && (
-                <p>Last updated: {new Date(lastUsedAt).toLocaleString()}</p>
-              )}
-            </div>
-          )}
-  
-          <div ref={exportRef} className="mt-8">
-            {summary && (
-              <>
-                <h3 className="text-lg font-semibold text-blue-700 mb-2">AI Summary</h3>
                 <div
-                  className="text-gray-700 prose prose-sm max-w-none mb-4"
-                  dangerouslySetInnerHTML={{ __html: marked.parse(summary) }}
+                  className="cursor-pointer"
+                  onClick={() => handleEditStart(msg)}
+                  dangerouslySetInnerHTML={{ __html: highlightKeywords(msg.text) }}
                 />
-              </>
-            )}
+              )}
+            </div>
+          ))}
+          {recognizing && (
+            <div className="text-xs text-blue-500 italic mt-1 animate-pulse">
+              🎤 Listening... (tap Stop to end)
+            </div>
+          )}
+        </div>
   
-            {nursingChart && (
-              <>
-                <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-4">Nursing Chart</h3>
-                {generatedAt && (
-                  <p className="text-sm text-gray-500 mb-3 italic">
-                    Generated on: {new Date(generatedAt).toLocaleString()}
-                  </p>
-                )}
-                <div className="space-y-4">
-                  {["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"].map((section) => {
-                    const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
-                    const match = nursingChart.match(regex);
-                    const content = match ? match[1].trim() : "";
+        <input
+          type="text"
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          placeholder={`Chat with ${patientName}`}
+          className="mt-4 border p-2 rounded w-full"
+        />
   
-                    return content ? (
-                      <div key={section} className="border border-purple-300 rounded-xl p-4 bg-purple-50 shadow-sm">
-                        <h4 className="text-md font-semibold text-purple-800 mb-2">{section}</h4>
-                        <div
-                          className="text-gray-700 prose prose-sm max-w-none"
-                          dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
-                        />
-                      </div>
-                    ) : null;
-                  })}
-                </div>
-              </>
+        <div className="flex gap-2 mt-3 flex-wrap">
+          <button onClick={() => handleSend()} className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">
+            Send
+          </button>
+          <button onClick={startRecognition} disabled={recognizing} className="bg-blue-600 text-white px-4 py-2 rounded">
+            Start Recognition
+          </button>
+          <button onClick={stopRecognition} disabled={!recognizing} className="bg-red-600 text-white px-4 py-2 rounded">
+            Stop Recognition
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={!summary && !nursingChart}
+            className={`px-4 py-2 rounded text-white ${
+              summary || nursingChart
+                ? "bg-indigo-500 hover:bg-indigo-600"
+                : "bg-gray-400 cursor-not-allowed"
+            }`}
+          >
+            Export PDF
+          </button>
+          <button
+            onClick={handleGenerateSummary}
+            disabled={loadingSummary}
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded"
+          >
+            {loadingSummary ? "Generating..." : "Generate Summary"}
+          </button>
+        </div>
+  
+        <button
+          onClick={() => setShowTranscript(!showTranscript)}
+          className="text-blue-700 underline text-sm mt-3"
+        >
+          {showTranscript ? "Hide Transcript" : "Show Transcript"}
+        </button>
+  
+        {showTranscript && (
+          <div className="mt-4 p-3 rounded bg-gray-50 border text-sm text-gray-700 whitespace-pre-wrap">
+            <h4 className="font-semibold mb-2 text-blue-800">Live Transcript</h4>
+            {liveTranscript ? (
+              <div
+                dangerouslySetInnerHTML={{ __html: highlightKeywords(liveTranscript) }}
+              />
+            ) : (
+              <p className="italic text-gray-400">No transcript yet. Speak to begin...</p>
             )}
           </div>
+        )}
+  
+        {(startedAt || lastUsedAt) && (
+          <div className="text-sm text-gray-500 mb-4 space-y-1 italic mt-6">
+            {startedAt && (
+              <p>Session started: {new Date(startedAt).toLocaleString()}</p>
+            )}
+            {lastUsedAt && (
+              <p>Last updated: {new Date(lastUsedAt).toLocaleString()}</p>
+            )}
+          </div>
+        )}
+  
+        <div ref={exportRef} className="mt-8">
+          {summary && (
+            <>
+              <h3 className="text-lg font-semibold text-blue-700 mb-2">AI Summary</h3>
+              <div
+                className="text-gray-700 prose prose-sm max-w-none mb-4"
+                dangerouslySetInnerHTML={{ __html: marked.parse(summary) }}
+              />
+            </>
+          )}
+  
+          {nursingChart && (
+            <>
+              <h3 className="text-lg font-semibold text-purple-700 mt-4 mb-4">Nursing Chart</h3>
+              {generatedAt && (
+                <p className="text-sm text-gray-500 mb-3 italic">
+                  Generated on: {new Date(generatedAt).toLocaleString()}
+                </p>
+              )}
+              <div className="space-y-4">
+                {["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"].map((section) => {
+                  const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
+                  const match = nursingChart.match(regex);
+                  const content = match ? match[1].trim() : "";
+  
+                  return content ? (
+                    <div key={section} className="border border-purple-300 rounded-xl p-4 bg-purple-50 shadow-sm">
+                      <h4 className="text-md font-semibold text-purple-800 mb-2">{section}</h4>
+                      <div
+                        className="text-gray-700 prose prose-sm max-w-none"
+                        dangerouslySetInnerHTML={{ __html: marked.parse(content) }}
+                      />
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
-  
 }
+
