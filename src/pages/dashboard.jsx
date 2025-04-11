@@ -21,22 +21,26 @@ const Dashboard = () => {
   const { selectedPatient, setSelectedPatient } = useOutletContext();
 
   useEffect(() => {
-    if (userId) {
-      fetchPatients();
-      sessionStorage.removeItem("selectedPatientId"); // Clear stored patient
-      setSelectedPatient(null); // 🔒 Lock notes again
-    }
-  }, [userId]);
-
-  const fetchPatients = async () => {
+    if (!userId) return;
+  
     const q = query(collection(db, "users", userId, "patients"));
-    const snapshot = await getDocs(q);
-    const patientList = snapshot.docs.map((doc) => ({
-      id: doc.id,
-      ...doc.data(),
-    }));
-    setPatients(patientList);
-  };
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const patientList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setPatients(patientList);
+  
+      const storedId = sessionStorage.getItem("selectedPatientId");
+      if (storedId) {
+        const match = patientList.find((p) => p.id === storedId);
+        if (match) setSelectedPatient(match);
+      }
+    });
+  
+    return () => unsubscribe(); // Clean up listener on unmount
+  }, [userId]);
+  
 
   const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
