@@ -126,31 +126,45 @@ export default function SessionEntry() {
   const handleSend = async (text) => {
     const content = text || chatInput;
     if (!content.trim()) return;
-
+  
     const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
     const fullMessage = `[${timestamp}] ${content}`;
-
-    await addDoc(
-      collection(
-        db,
-        "users",
-        user.uid,
-        "patients",
-        patientId,
-        "sessions",
-        sessionId,
-        "messages"
-      ),
-      {
-        text: fullMessage,
-        timestamp: new Date(),
-        lastUsedAt: new Date().toISOString(),
-      }
+  
+    const messageRef = collection(
+      db,
+      "users",
+      user.uid,
+      "patients",
+      patientId,
+      "sessions",
+      sessionId,
+      "messages"
     );
-
+  
+    await addDoc(messageRef, {
+      text: fullMessage,
+      timestamp: new Date(),
+    });
+  
+    // ✅ Update the parent session with the new "last used" time
+    const sessionRef = doc(
+      db,
+      "users",
+      user.uid,
+      "patients",
+      patientId,
+      "sessions",
+      sessionId
+    );
+  
+    await updateDoc(sessionRef, {
+      lastUsedAt: new Date().toISOString(),
+    });
+  
     setChatInput("");
     setLiveTranscript("");
   };
+  
 
   const tagSpeaker = (text) => {
     const lower = text.toLowerCase();
@@ -227,7 +241,7 @@ export default function SessionEntry() {
 
   const handleEditSave = async () => {
     if (!editingValue.trim()) return;
-
+  
     const msgRef = doc(
       db,
       "users",
@@ -239,11 +253,30 @@ export default function SessionEntry() {
       "messages",
       editingMessageId
     );
-
-    await updateDoc(msgRef, { text: editingValue });
+  
+    await updateDoc(msgRef, {
+      text: editingValue,
+    });
+  
+    // ✅ Update session's lastUsedAt
+    const sessionRef = doc(
+      db,
+      "users",
+      user.uid,
+      "patients",
+      patientId,
+      "sessions",
+      sessionId
+    );
+  
+    await updateDoc(sessionRef, {
+      lastUsedAt: new Date().toISOString(),
+    });
+  
     setEditingMessageId(null);
     setEditingValue("");
   };
+  
 
   const handleGenerateSummary = async () => {
     if (!messages.length) return;
