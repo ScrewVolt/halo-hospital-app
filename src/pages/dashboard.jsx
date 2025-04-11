@@ -14,14 +14,13 @@ const Dashboard = () => {
 
 
   useEffect(() => {
-    if (userId) {
-      fetchPatients();
+    const storedId = sessionStorage.getItem("selectedPatientId");
+    if (storedId && patients.length > 0) {
+      const match = patients.find((p) => p.id === storedId);
+      if (match) setSelectedPatient(match);
     }
-  }, [userId]);
-
-  const filteredPatients = patients.filter((p) =>
-    p.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [patients]);
+  
   
   
 
@@ -68,12 +67,12 @@ const Dashboard = () => {
   };
 
   const goToPatient = (id) => {
-    const found = patients.find((p) => p.id === id);
-    if (found) {
-      setSelectedPatient(found);
-      navigate(`/patient/${id}`);
-    }
+    const patient = patients.find((p) => p.id === id);
+    setSelectedPatient(patient);
+    sessionStorage.setItem("selectedPatientId", id); // 🔐 persist across refresh
+    navigate(`/patient/${id}`);
   };
+  
   
   
 
