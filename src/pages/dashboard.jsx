@@ -20,20 +20,21 @@ const Dashboard = () => {
   // ⬇️ Grab context for sidebar state sync
   const { selectedPatient, setSelectedPatient } = useOutletContext();
 
-  // ⬇️ Reset selected patient when returning to dashboard
   useEffect(() => {
     const storedId = sessionStorage.getItem("selectedPatientId");
-
+  
     if (location.pathname === "/dashboard") {
-      setSelectedPatient(null); // ✅ Lock notes
+      setSelectedPatient(null);             // ✅ Lock notes
+      sessionStorage.removeItem("selectedPatientId"); // ✅ Clear memory
       return;
     }
-
+  
     if (storedId && patients.length > 0) {
       const match = patients.find((p) => p.id === storedId);
       if (match) setSelectedPatient(match);
     }
   }, [location.pathname, patients]);
+  
 
   // ⬇️ Real-time updates from Firestore
   useEffect(() => {
