@@ -81,13 +81,6 @@ useEffect(() => {
 
   return (
     <div className="flex min-h-screen bg-gray-100">
-      <Sidebar
-        patients={patients}
-        onSearch={handleSearch}
-        onAddPatient={handleAddPatient}
-        selectedPatient={selectedPatient}
-      />
-
       <div className="flex-1 p-8">
         <h2 className="text-4xl font-bold mb-8 text-center text-blue-800">Patients</h2>
 
