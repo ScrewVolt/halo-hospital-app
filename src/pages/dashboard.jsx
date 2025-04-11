@@ -7,6 +7,7 @@ import {
   deleteDoc,
   doc,
   query,
+  onSnapshot, // ✅ Add this line
 } from "firebase/firestore";
 import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 
