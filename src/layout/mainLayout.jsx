@@ -16,7 +16,7 @@ const MainLayout = ({
         patients={patients}
         selectedPatient={selectedPatient}
         setSelectedPatient={setSelectedPatient}
-        onAddPatient={onAddPatient}
+        onAddPatient={handleAddPatient} // ✅ this
         onSearch={setSearchTerm} // ✅ pass state updater
       />
       <div className="flex-1 p-8 overflow-y-auto">

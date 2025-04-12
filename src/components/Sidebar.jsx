@@ -11,10 +11,14 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
   const [notes, setNotes] = useState("");
 
   const handleAdd = () => {
-    if (onAddPatient) onAddPatient(query, room);
-    setQuery("");
-    setRoom("");
+    if (!query.trim() || !room.trim()) return; // ⛔ prevent empty add
+    if (onAddPatient) {
+      onAddPatient(query.trim(), room.trim());
+      setQuery("");
+      setRoom("");
+    }
   };
+  
 
   useEffect(() => {
     console.log("🧠 selectedPatient in Sidebar:", selectedPatient);
