@@ -12,13 +12,10 @@ import { useNavigate, useLocation, useOutletContext } from "react-router-dom";
 
 const Dashboard = () => {
   const [patients, setPatients] = useState([]);
-  const [searchTerm, setSearchTerm] = useState("");
+  const { selectedPatient, setSelectedPatient, searchTerm } = useOutletContext();
   const navigate = useNavigate();
   const location = useLocation();
   const userId = auth.currentUser?.uid;
-
-  // ⬇️ Grab context for sidebar state sync
-  const { selectedPatient, setSelectedPatient } = useOutletContext();
 
   useEffect(() => {
     const storedId = sessionStorage.getItem("selectedPatientId");
@@ -55,10 +52,6 @@ const Dashboard = () => {
   const filteredPatients = patients.filter((p) =>
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleSearch = (value) => {
-    setSearchTerm(value);
-  };
 
   const handleAddPatient = async (name, room) => {
     if (!name.trim() || !room.trim()) return;
