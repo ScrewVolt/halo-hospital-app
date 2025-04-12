@@ -8,7 +8,7 @@ const MainLayout = ({
   selectedPatient,
   setSelectedPatient,
 }) => {
-  const [searchTerm, setSearchTerm] = useState(""); // ✅ local state
+  const [searchTerm, setSearchTerm] = useState("");
 
   return (
     <div className="flex min-h-screen bg-gray-100">
@@ -16,12 +16,12 @@ const MainLayout = ({
         patients={patients}
         selectedPatient={selectedPatient}
         setSelectedPatient={setSelectedPatient}
-        onAddPatient={handleAddPatient} // ✅ this
-        onSearch={setSearchTerm} // ✅ pass state updater
+        onAddPatient={onAddPatient} // ✅ fixed
+        onSearch={setSearchTerm}
       />
       <div className="flex-1 p-8 overflow-y-auto">
         <Outlet
-          context={{ selectedPatient, setSelectedPatient, searchTerm }} // ✅ fixed
+          context={{ selectedPatient, setSelectedPatient, searchTerm }}
         />
       </div>
     </div>
