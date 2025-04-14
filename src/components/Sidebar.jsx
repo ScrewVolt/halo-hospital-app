@@ -6,28 +6,31 @@ import { doc, getDoc, updateDoc } from "firebase/firestore";
 const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => {
   const navigate = useNavigate();
 
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(""); // for adding
   const [room, setRoom] = useState("");
   const [notes, setNotes] = useState("");
+  const [searchInput, setSearchInput] = useState(""); // NEW: separate from query
 
   const handleAdd = () => {
     const trimmedName = query.trim();
     const trimmedRoom = room.trim();
-  
+
     if (!trimmedName || !trimmedRoom) return;
-  
+
     onAddPatient?.(trimmedName, trimmedRoom);
-    setQuery("");
+    setQuery(""); // clear add input
     setRoom("");
+    setSearchInput("");       // ✅ Clear search bar
+    onSearch?.("");           // ✅ Clear filter in dashboard
   };
-  
-  
 
   useEffect(() => {
-    console.log("🧠 selectedPatient in Sidebar:", selectedPatient);
+    onSearch?.(searchInput); // 🔁 Keep dashboard in sync with search input
+  }, [searchInput]);
 
+  useEffect(() => {
     if (!selectedPatient) {
-      setNotes(""); // Clear notes if no patient is selected
+      setNotes(""); // Clear notes
       return;
     }
 
@@ -61,13 +64,18 @@ const Sidebar = ({ patients = [], onSearch, onAddPatient, selectedPatient }) => 
         <div className="flex flex-col items-center gap-2 w-full">
           <input
             type="text"
+            placeholder="Search Patients"
+            className="rounded-full px-3 py-1 text-black w-full text-sm"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)} // 🔁 real-time search
+          />
+
+          <input
+            type="text"
             placeholder="Patient Name"
             className="rounded-full px-3 py-1 text-black w-full text-sm"
             value={query}
-            onChange={(e) => {
-              setQuery(e.target.value);
-              if (onSearch) onSearch(e.target.value);
-            }}
+            onChange={(e) => setQuery(e.target.value)}
           />
 
           <input
