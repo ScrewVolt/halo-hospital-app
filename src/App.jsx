@@ -14,15 +14,17 @@ function App() {
   const [patients, setPatients] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const userId = auth.currentUser?.uid;
 
   useEffect(() => {
-    if (userId) {
-      fetchPatients();
-    }
-  }, [userId]);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        fetchPatients(user.uid);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const fetchPatients = async () => {
+  const fetchPatients = async (userId) => {
     if (!userId) return;
     const q = query(collection(db, "users", userId, "patients"));
     const snapshot = await getDocs(q);
@@ -41,31 +43,38 @@ function App() {
   };
 
   const handleAddPatient = async (name, room) => {
-    if (!userId || !name || !room) return;
+    const currentUser = auth.currentUser;
+    if (!currentUser || !name || !room) return;
+
     const newPatient = {
       name: name.trim(),
       room: room.trim(),
       createdAt: new Date(),
     };
-    await addDoc(collection(db, "users", userId, "patients"), newPatient);
-    fetchPatients(); // Refresh after add
+
+    try {
+      await addDoc(collection(db, "users", currentUser.uid, "patients"), newPatient);
+      fetchPatients(currentUser.uid); // Refresh after add
+    } catch (error) {
+      console.error("❌ Error adding patient:", error);
+    }
   };
 
   return (
     <Router>
       <Routes>
         <Route path="/" element={<Login />} />
-        
+
         <Route
           element={
             <ProtectedRoute>
-            <MainLayout
-              patients={patients}
-              onSearch={handleSearch}
-              onAddPatient={handleAddPatient}
-              selectedPatient={selectedPatient}
-              setSelectedPatient={setSelectedPatient}
-            />
+              <MainLayout
+                patients={patients}
+                onSearch={handleSearch}
+                onAddPatient={handleAddPatient}
+                selectedPatient={selectedPatient}
+                setSelectedPatient={setSelectedPatient}
+              />
             </ProtectedRoute>
           }
         >
