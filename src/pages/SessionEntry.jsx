@@ -61,6 +61,7 @@ export default function SessionEntry() {
   const exportRef = useRef(null);
   const recognitionRef = useRef(null);
   const shouldRestartRef = useRef(false);
+  const [sessionNotes, setSessionNotes] = useState("");
   const user = auth.currentUser;
 
   useEffect(() => {
@@ -98,6 +99,7 @@ export default function SessionEntry() {
       const sessionData = sessionSnap.data() || {};
       setSummary(sessionData.summary || "");
       setNursingChart(sessionData.nursingChart || "");
+      setSessionNotes(sessionData.sessionNotes || ""); // ✅ added
       setGeneratedAt(sessionData.generatedAt || null);
       setStartedAt(sessionData.startedAt || null);
       setLastUsedAt(sessionData.lastUsedAt || null);
@@ -121,7 +123,24 @@ export default function SessionEntry() {
     fetchPatient();
   }, [user, patientId, setSelectedPatient]);
 
+  const handleSessionNotesChange = async (val) => {
+    setSessionNotes(val);
   
+    const sessionRef = doc(
+      db,
+      "users",
+      user.uid,
+      "patients",
+      patientId,
+      "sessions",
+      sessionId
+    );
+  
+    await updateDoc(sessionRef, {
+      sessionNotes: val,
+      lastUsedAt: new Date().toISOString(),
+    });
+  };  
 
   const handleSend = async (text) => {
     const content = text || chatInput;
@@ -523,6 +542,16 @@ export default function SessionEntry() {
               </div>
             </>
           )}
+                <div className="mt-6">
+                <h3 className="text-lg font-semibold text-green-700 mb-2">Nurse Notes (Session Specific)</h3>
+                <textarea
+                  value={sessionNotes}
+                  onChange={(e) => handleSessionNotesChange(e.target.value)}
+                  placeholder="Enter session-specific notes..."
+                  className="w-full p-2 border rounded text-sm text-gray-800 bg-white min-h-[100px]"
+                />
+              </div>
+
         </div>
       </div>
     </div>
