@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { db, auth } from "../firebase";
 import {
   collection,
-  addDoc,
   deleteDoc,
   doc,
   query,
@@ -17,23 +16,23 @@ const Dashboard = () => {
   const location = useLocation();
   const userId = auth.currentUser?.uid;
 
+  // 🔒 Lock notes when landing on dashboard
   useEffect(() => {
     const storedId = sessionStorage.getItem("selectedPatientId");
-  
+
     if (location.pathname === "/dashboard") {
-      setSelectedPatient(null);             // ✅ Lock notes
-      sessionStorage.removeItem("selectedPatientId"); // ✅ Clear memory
+      setSelectedPatient(null);
+      sessionStorage.removeItem("selectedPatientId");
       return;
     }
-  
+
     if (storedId && patients.length > 0) {
       const match = patients.find((p) => p.id === storedId);
       if (match) setSelectedPatient(match);
     }
   }, [location.pathname, patients]);
-  
 
-  // ⬇️ Real-time updates from Firestore
+  // 🔁 Real-time Firestore sync
   useEffect(() => {
     if (!userId) return;
 
@@ -53,26 +52,8 @@ const Dashboard = () => {
     p.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleAddPatient = async (name, room) => {
-    if (!name.trim() || !room.trim()) return;
-
-    const alreadyExists = patients.some(
-      (p) => p.name.toLowerCase() === name.toLowerCase()
-    );
-    if (alreadyExists) return;
-
-    await addDoc(collection(db, "users", userId, "patients"), {
-      name: name.trim(),
-      room: room.trim(),
-      createdAt: new Date(),
-    });
-
-    // ✅ No need to fetch manually — onSnapshot handles updates
-  };
-
   const handleDeletePatient = async (id) => {
     await deleteDoc(doc(db, "users", userId, "patients", id));
-    // ✅ Real-time sync will update patients automatically
   };
 
   const goToPatient = (id) => {
