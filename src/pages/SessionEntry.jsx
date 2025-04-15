@@ -369,16 +369,26 @@ export default function SessionEntry() {
   const handleExport = async () => {
     const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
     const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
     let y = 40;
   
     const lineHeight = 18;
     const padding = 12;
-    const boxMargin = 16;
+    const boxMargin = 24;
     const boxWidth = pageWidth - 2 * boxMargin;
+  
+    const addPageIfNeeded = (boxHeight) => {
+      if (y + boxHeight > pageHeight - 40) {
+        pdf.addPage();
+        y = 40;
+      }
+    };
   
     const drawBox = (label, content, labelColor = "#111", borderColor = "#ccc", fillColor = "#f9f9f9") => {
       const lines = pdf.splitTextToSize(content, boxWidth - 2 * padding);
       const boxHeight = (lines.length + 1.5) * lineHeight + padding;
+  
+      addPageIfNeeded(boxHeight);
   
       pdf.setDrawColor(borderColor);
       pdf.setFillColor(fillColor);
@@ -394,7 +404,7 @@ export default function SessionEntry() {
       pdf.setTextColor("#111");
       pdf.text(lines, boxMargin + padding, y + 2 * lineHeight);
   
-      y += boxHeight + 12;
+      y += boxHeight + 14;
     };
   
     // Title
@@ -430,6 +440,7 @@ export default function SessionEntry() {
   
     pdf.save(`${patientName}_Session_Report.pdf`);
   };
+  
   
   return (
     <div className="flex-1 p-8">
