@@ -146,7 +146,9 @@ export default function SessionEntry() {
     const content = text || chatInput;
     if (!content.trim()) return;
   
-    const timestamp = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
+    const now = new Date();
+    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+  
     const fullMessage = `[${timestamp}] ${content}`;
   
     const messageRef = collection(
@@ -165,7 +167,6 @@ export default function SessionEntry() {
       timestamp: new Date(),
     });
   
-    // ✅ Update the parent session with the new "last used" time
     const sessionRef = doc(
       db,
       "users",
@@ -183,6 +184,7 @@ export default function SessionEntry() {
     setChatInput("");
     setLiveTranscript("");
   };
+  
   
 
   const tagSpeaker = (text) => {
