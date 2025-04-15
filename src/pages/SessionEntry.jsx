@@ -23,14 +23,20 @@ const highlightKeywords = (text) => {
     medication: "text-indigo-600 font-semibold",
     blood: "text-blue-700 font-semibold",
     pressure: "text-blue-700 font-semibold",
+    "blood pressure": "text-blue-700 font-semibold",
     vomiting: "text-orange-600 font-semibold",
     history: "text-green-600 font-semibold",
     follow: "text-green-600 font-semibold",
+    fractured: "text-red-700 font-semibold",
+    bleeding: "text-red-700 font-semibold",
+    "x-ray": "text-indigo-700 font-semibold",
     Data: "text-blue-600 font-semibold",
     Action: "text-green-600 font-semibold",
     Response: "text-orange-600 font-semibold",
   };
+
   const pattern = new RegExp(`\\b(${Object.keys(keywords).join("|")})\\b`, "gi");
+
   return text.replace(pattern, (match) => {
     const className = keywords[match.toLowerCase()] || "bg-yellow-200";
     return `<span class="${className}">${match}</span>`;
