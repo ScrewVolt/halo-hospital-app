@@ -408,7 +408,7 @@ export default function SessionEntry() {
       const sections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
       pdf.setFontSize(12);
       sections.forEach((section) => {
-        const regex = new RegExp(`\*\*${section}:\*\*\\s*([\\s\\S]*?)(?=\n\*\*|$)`, "i");
+        const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
         const match = nursingChart.match(regex);
         const content = match ? match[1].trim() : "";
         if (content) {
