@@ -366,76 +366,76 @@ export default function SessionEntry() {
   };
   
 
-  const handleExport = async () => {
-    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
+  const handleExport = () => {
+    const doc = new jsPDF("p", "pt", "a4");
     const margin = 40;
+    const lineHeight = 18;
+    const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
     let y = margin;
-
-    const wrapText = (text, width) => {
-      return pdf.splitTextToSize(text, width);
+  
+    const addSection = (title, content, color = "#000") => {
+      if (!content) return;
+      doc.setTextColor(color);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text(title, margin, y);
+      y += lineHeight;
+  
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      const lines = doc.splitTextToSize(content, maxWidth);
+      doc.text(lines, margin, y);
+      y += lines.length * lineHeight + 10;
     };
-
-    pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(20);
-    pdf.text(`Session with ${patientName}`, margin, y);
-    y += 30;
-
-    pdf.setFontSize(12);
-    pdf.setFont("helvetica", "normal");
-    if (startedAt) pdf.text(`Session Started: ${new Date(startedAt).toLocaleString()}`, margin, y);
+  
+    doc.setFontSize(20);
+    doc.setTextColor("#1e3a8a"); // blue-800
+    doc.setFont("helvetica", "bold");
+    doc.text(`Session with ${patientName}`, margin, y);
+    y += lineHeight * 1.5;
+  
+    doc.setFontSize(12);
+    doc.setTextColor("#555");
+    doc.setFont("helvetica", "normal");
+    if (startedAt) {
+      doc.text(`Session Started: ${new Date(startedAt).toLocaleString()}`, margin, y);
+      y += lineHeight;
+    }
     if (lastUsedAt) {
-      y += 16;
-      pdf.text(`Last Updated: ${new Date(lastUsedAt).toLocaleString()}`, margin, y);
+      doc.text(`Last Updated: ${new Date(lastUsedAt).toLocaleString()}`, margin, y);
+      y += lineHeight;
     }
-    y += 30;
-
-    if (summary) {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.text("AI Summary:", margin, y);
-      y += 20;
-      pdf.setFont("helvetica", "normal");
-      const summaryLines = wrapText(summary, 500);
-      pdf.text(summaryLines, margin, y);
-      y += summaryLines.length * 16 + 10;
-    }
-
+  
+    y += lineHeight;
+  
+    // Add Summary
+    addSection("AI Summary:", summary, "#1e40af");
+  
+    // Add Nursing Chart sections
+    const sections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
     if (nursingChart) {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.text("Nursing Chart:", margin, y);
-      y += 20;
-      const sections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
-      pdf.setFontSize(12);
+      doc.setTextColor("#7e22ce"); // purple-700
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.text("Nursing Chart:", margin, y);
+      y += lineHeight;
+  
       sections.forEach((section) => {
         const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
         const match = nursingChart.match(regex);
         const content = match ? match[1].trim() : "";
         if (content) {
-          pdf.setFont("helvetica", "bold");
-          pdf.text(`${section}:`, margin, y);
-          y += 16;
-          pdf.setFont("helvetica", "normal");
-          const lines = wrapText(content, 500);
-          pdf.text(lines, margin, y);
-          y += lines.length * 16 + 8;
+          addSection(`${section}:`, content, "#111827");
         }
       });
     }
-
-    if (sessionNotes) {
-      pdf.setFont("helvetica", "bold");
-      pdf.setFontSize(16);
-      pdf.text("Nurse Notes:", margin, y);
-      y += 20;
-      pdf.setFont("helvetica", "normal");
-      const noteLines = wrapText(sessionNotes, 500);
-      pdf.text(noteLines, margin, y);
-      y += noteLines.length * 16 + 8;
-    }
-
-    pdf.save(`${patientName}_Report.pdf`);
+  
+    // Add Nurse Notes
+    addSection("Nurse Notes:", sessionNotes, "#065f46");
+  
+    doc.save(`${patientName}_SessionReport.pdf`);
   };
+  
   
 
   return (
