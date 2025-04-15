@@ -189,7 +189,7 @@ export default function SessionEntry() {
     setChatInput("");
     setLiveTranscript("");
   };  
-  
+
   const tagSpeaker = (text) => {
     const lower = text.toLowerCase();
     if (lower.startsWith("nurse")) return `Nurse: ${text.replace(/^nurse\s*/i, "")}`;
@@ -367,40 +367,74 @@ export default function SessionEntry() {
   
 
   const handleExport = async () => {
-    if (!exportRef.current) return;
-  
-    // ✅ Delay slightly to ensure DOM is fully rendered
-    await new Promise((resolve) => setTimeout(resolve, 250));
-  
-    try {
-      const element = exportRef.current;
-  
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true, // optional but helps with font/image loading
-        backgroundColor: "#fff",
-      });
-  
-      const imgData = canvas.toDataURL("image/png");
-  
-      if (!imgData || imgData.length < 50) {
-        throw new Error("Empty or invalid image data");
-      }
-  
-      const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-  
-      const ratio = Math.min(pageWidth / canvas.width, pageHeight / canvas.height);
-      const imgWidth = canvas.width * ratio;
-      const imgHeight = canvas.height * ratio;
-  
-      pdf.addImage(imgData, "PNG", 20, 20, imgWidth, imgHeight);
-      pdf.save(`${patientName}_Report.pdf`);
-    } catch (err) {
-      console.error("❌ Export failed:", err);
-      alert("Export failed. Make sure the report section is visible and fully loaded.");
+    const pdf = new jsPDF({ orientation: "portrait", unit: "px", format: "a4" });
+    const margin = 40;
+    let y = margin;
+
+    const wrapText = (text, width) => {
+      return pdf.splitTextToSize(text, width);
+    };
+
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    pdf.text(`Session with ${patientName}`, margin, y);
+    y += 30;
+
+    pdf.setFontSize(12);
+    pdf.setFont("helvetica", "normal");
+    if (startedAt) pdf.text(`Session Started: ${new Date(startedAt).toLocaleString()}`, margin, y);
+    if (lastUsedAt) {
+      y += 16;
+      pdf.text(`Last Updated: ${new Date(lastUsedAt).toLocaleString()}`, margin, y);
     }
+    y += 30;
+
+    if (summary) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text("AI Summary:", margin, y);
+      y += 20;
+      pdf.setFont("helvetica", "normal");
+      const summaryLines = wrapText(summary, 500);
+      pdf.text(summaryLines, margin, y);
+      y += summaryLines.length * 16 + 10;
+    }
+
+    if (nursingChart) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text("Nursing Chart:", margin, y);
+      y += 20;
+      const sections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
+      pdf.setFontSize(12);
+      sections.forEach((section) => {
+        const regex = new RegExp(`\*\*${section}:\*\*\\s*([\\s\\S]*?)(?=\n\*\*|$)`, "i");
+        const match = nursingChart.match(regex);
+        const content = match ? match[1].trim() : "";
+        if (content) {
+          pdf.setFont("helvetica", "bold");
+          pdf.text(`${section}:`, margin, y);
+          y += 16;
+          pdf.setFont("helvetica", "normal");
+          const lines = wrapText(content, 500);
+          pdf.text(lines, margin, y);
+          y += lines.length * 16 + 8;
+        }
+      });
+    }
+
+    if (sessionNotes) {
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(16);
+      pdf.text("Nurse Notes:", margin, y);
+      y += 20;
+      pdf.setFont("helvetica", "normal");
+      const noteLines = wrapText(sessionNotes, 500);
+      pdf.text(noteLines, margin, y);
+      y += noteLines.length * 16 + 8;
+    }
+
+    pdf.save(`${patientName}_Report.pdf`);
   };
   
 
