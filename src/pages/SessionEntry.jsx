@@ -369,34 +369,49 @@ export default function SessionEntry() {
   const handleExport = () => {
     const doc = new jsPDF("p", "pt", "a4");
     const margin = 40;
+    const pageWidth = doc.internal.pageSize.getWidth();
+    const usableWidth = pageWidth - margin * 2;
     const lineHeight = 18;
-    const maxWidth = doc.internal.pageSize.getWidth() - margin * 2;
     let y = margin;
   
-    const addSection = (title, content, color = "#000") => {
+    const addBoxedSection = (title, content, borderColor = "#e5e7eb", headingColor = "#1e40af") => {
       if (!content) return;
-      doc.setTextColor(color);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.text(title, margin, y);
-      y += lineHeight;
   
+      // Split content
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
-      const lines = doc.splitTextToSize(content, maxWidth);
-      doc.text(lines, margin, y);
-      y += lines.length * lineHeight + 10;
+      const lines = doc.splitTextToSize(content, usableWidth - 20);
+      const boxHeight = lines.length * lineHeight + 40;
+  
+      // Draw box
+      doc.setDrawColor(borderColor);
+      doc.roundedRect(margin, y, usableWidth, boxHeight, 8, 8);
+  
+      // Title
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(headingColor);
+      doc.text(title, margin + 10, y + 22);
+  
+      // Content
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor("#111827");
+      doc.text(lines, margin + 10, y + 42);
+  
+      y += boxHeight + 20;
     };
   
-    doc.setFontSize(20);
-    doc.setTextColor("#1e3a8a"); // blue-800
+    // Title
     doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor("#1e3a8a");
     doc.text(`Session with ${patientName}`, margin, y);
-    y += lineHeight * 1.5;
+    y += lineHeight * 2;
   
+    // Timestamps
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(12);
     doc.setTextColor("#555");
-    doc.setFont("helvetica", "normal");
     if (startedAt) {
       doc.text(`Session Started: ${new Date(startedAt).toLocaleString()}`, margin, y);
       y += lineHeight;
@@ -405,19 +420,18 @@ export default function SessionEntry() {
       doc.text(`Last Updated: ${new Date(lastUsedAt).toLocaleString()}`, margin, y);
       y += lineHeight;
     }
+    y += 10;
   
-    y += lineHeight;
+    // AI Summary Box
+    addBoxedSection("AI Summary", summary);
   
-    // Add Summary
-    addSection("AI Summary:", summary, "#1e40af");
-  
-    // Add Nursing Chart sections
+    // Nursing Chart Sections
     const sections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
     if (nursingChart) {
-      doc.setTextColor("#7e22ce"); // purple-700
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
-      doc.text("Nursing Chart:", margin, y);
+      doc.setTextColor("#7e22ce");
+      doc.text("Nursing Chart", margin, y);
       y += lineHeight;
   
       sections.forEach((section) => {
@@ -425,19 +439,18 @@ export default function SessionEntry() {
         const match = nursingChart.match(regex);
         const content = match ? match[1].trim() : "";
         if (content) {
-          addSection(`${section}:`, content, "#111827");
+          addBoxedSection(section, content, "#ddd", "#7e22ce");
         }
       });
     }
   
-    // Add Nurse Notes
-    addSection("Nurse Notes:", sessionNotes, "#065f46");
+    // Nurse Notes Box
+    addBoxedSection("Nurse Notes", sessionNotes, "#d1fae5", "#047857");
   
+    // Save
     doc.save(`${patientName}_SessionReport.pdf`);
   };
   
-  
-
   return (
     <div className="flex-1 p-8">
       <h2 className="text-3xl font-bold text-center text-blue-800 mb-6">
