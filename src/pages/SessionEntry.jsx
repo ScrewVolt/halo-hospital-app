@@ -147,7 +147,12 @@ export default function SessionEntry() {
     if (!content.trim()) return;
   
     const now = new Date();
-    const timestamp = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")} ${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}:${String(now.getSeconds()).padStart(2, "0")}`;
+    const timestamp = now.toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: true,
+    });
   
     const fullMessage = `[${timestamp}] ${content}`;
   
@@ -183,10 +188,8 @@ export default function SessionEntry() {
   
     setChatInput("");
     setLiveTranscript("");
-  };
+  };  
   
-  
-
   const tagSpeaker = (text) => {
     const lower = text.toLowerCase();
     if (lower.startsWith("nurse")) return `Nurse: ${text.replace(/^nurse\s*/i, "")}`;
