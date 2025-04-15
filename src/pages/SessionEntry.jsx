@@ -366,89 +366,69 @@ export default function SessionEntry() {
   };
   
 
-  const handleExport = () => {
-    const doc = new jsPDF("p", "pt", "a4");
-    const margin = 40;
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const usableWidth = pageWidth - margin * 2;
+  const handleExport = async () => {
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    let y = 40;
+  
     const lineHeight = 18;
-    let y = margin;
+    const padding = 12;
+    const boxMargin = 16;
+    const boxWidth = pageWidth - 2 * boxMargin;
   
-    const addBoxedSection = (title, content, borderColor = "#e5e7eb", headingColor = "#1e40af") => {
-      if (!content) return;
+    const drawBox = (label, content, labelColor = "#111", borderColor = "#ccc", fillColor = "#f9f9f9") => {
+      const lines = pdf.splitTextToSize(content, boxWidth - 2 * padding);
+      const boxHeight = (lines.length + 1.5) * lineHeight + padding;
   
-      // Split content
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      const lines = doc.splitTextToSize(content, usableWidth - 20);
-      const boxHeight = lines.length * lineHeight + 40;
+      pdf.setDrawColor(borderColor);
+      pdf.setFillColor(fillColor);
+      pdf.roundedRect(boxMargin, y, boxWidth, boxHeight, 8, 8, "FD");
   
-      // Draw box
-      doc.setDrawColor(borderColor);
-      doc.roundedRect(margin, y, usableWidth, boxHeight, 8, 8);
+      pdf.setTextColor(labelColor);
+      pdf.setFontSize(13);
+      pdf.setFont(undefined, "bold");
+      pdf.text(label, boxMargin + padding, y + lineHeight);
   
-      // Title
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.setTextColor(headingColor);
-      doc.text(title, margin + 10, y + 22);
+      pdf.setFontSize(12);
+      pdf.setFont(undefined, "normal");
+      pdf.setTextColor("#111");
+      pdf.text(lines, boxMargin + padding, y + 2 * lineHeight);
   
-      // Content
-      doc.setFont("helvetica", "normal");
-      doc.setTextColor("#111827");
-      doc.text(lines, margin + 10, y + 42);
-  
-      y += boxHeight + 20;
+      y += boxHeight + 12;
     };
   
     // Title
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.setTextColor("#1e3a8a");
-    doc.text(`Session with ${patientName}`, margin, y);
-    y += lineHeight * 2;
+    pdf.setFontSize(20);
+    pdf.setTextColor("#1E3A8A");
+    pdf.setFont(undefined, "bold");
+    pdf.text(`Session with ${patientName}`, boxMargin, y);
+    y += lineHeight + 6;
   
-    // Timestamps
-    doc.setFont("helvetica", "normal");
-    doc.setFontSize(12);
-    doc.setTextColor("#555");
-    if (startedAt) {
-      doc.text(`Session Started: ${new Date(startedAt).toLocaleString()}`, margin, y);
-      y += lineHeight;
-    }
-    if (lastUsedAt) {
-      doc.text(`Last Updated: ${new Date(lastUsedAt).toLocaleString()}`, margin, y);
-      y += lineHeight;
-    }
-    y += 10;
+    // Session Times
+    pdf.setFontSize(12);
+    pdf.setFont(undefined, "normal");
+    pdf.setTextColor("#444");
+    if (startedAt) pdf.text(`Session Started: ${new Date(startedAt).toLocaleString()}`, boxMargin, y);
+    y += lineHeight;
+    if (lastUsedAt) pdf.text(`Last Updated: ${new Date(lastUsedAt).toLocaleString()}`, boxMargin, y);
+    y += lineHeight + 10;
   
-    // AI Summary Box
-    addBoxedSection("AI Summary", summary);
+    // AI Summary
+    if (summary) drawBox("AI Summary", summary, "#1E3A8A", "#c3dafe", "#ebf4ff");
   
     // Nursing Chart Sections
-    const sections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
-    if (nursingChart) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
-      doc.setTextColor("#7e22ce");
-      doc.text("Nursing Chart", margin, y);
-      y += lineHeight;
+    const chartSections = ["Assessment", "Diagnosis", "Plan", "Interventions", "Evaluation"];
+    chartSections.forEach((section) => {
+      const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
+      const match = nursingChart.match(regex);
+      const content = match ? match[1].trim() : "";
+      if (content) drawBox(section, content, "#6B21A8", "#e9d5ff", "#faf5ff");
+    });
   
-      sections.forEach((section) => {
-        const regex = new RegExp(`\\*\\*${section}:\\*\\*\\s*([\\s\\S]*?)(?=\\n\\*\\*|$)`, "i");
-        const match = nursingChart.match(regex);
-        const content = match ? match[1].trim() : "";
-        if (content) {
-          addBoxedSection(section, content, "#ddd", "#7e22ce");
-        }
-      });
-    }
+    // Nurse Notes
+    if (sessionNotes) drawBox("Nurse Notes", sessionNotes, "#047857", "#d1fae5", "#f0fdfa");
   
-    // Nurse Notes Box
-    addBoxedSection("Nurse Notes", sessionNotes, "#d1fae5", "#047857");
-  
-    // Save
-    doc.save(`${patientName}_SessionReport.pdf`);
+    pdf.save(`${patientName}_Session_Report.pdf`);
   };
   
   return (
